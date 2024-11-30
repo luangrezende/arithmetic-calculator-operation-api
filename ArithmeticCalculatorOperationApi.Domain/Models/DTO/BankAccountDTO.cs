@@ -1,4 +1,4 @@
-﻿namespace ArithmeticCalculatorUserApi.Domain.Models.DTO
+﻿namespace ArithmeticCalculatorOperationApi.Domain.Models.DTO
 {
     public class BankAccountDTO
     {

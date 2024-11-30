@@ -19,7 +19,7 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.2.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ArithmeticCalculatorUserApi.Domain\ArithmeticCalculatorUserApi.Domain\ArithmeticCalculatorUserApi.Domain.csproj" />
+    <ProjectReference Include="..\ArithmeticCalculatorOperationApi.Domain\ArithmeticCalculatorOperationApi.Domain.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="aws-lambda-tools-defaults.json">

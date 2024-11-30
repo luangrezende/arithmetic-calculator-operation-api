@@ -1,8 +1,8 @@
-﻿using ArithmeticCalculatorUserApi.Domain.Models.DTO;
-using ArithmeticCalculatorUserApi.Domain.Services.Interfaces;
-using ArithmeticCalculatorUserApi.Infrastructure.Repositories;
+﻿using ArithmeticCalculatorOperationApi.Domain.Models.DTO;
+using ArithmeticCalculatorOperationApi.Domain.Services.Interfaces;
+using ArithmeticCalculatorOperationApi.Infrastructure.Repositories;
 
-namespace ArithmeticCalculatorUserApi.Domain.Services
+namespace ArithmeticCalculatorOperationApi.Domain.Services
 {
     public class BankAccountService : IBankAccountService
     {

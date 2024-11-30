@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\ArithmeticCalculatorUserApi.Infrastructure\ArithmeticCalculatorUserApi.Infrastructure.csproj" />
+    <ProjectReference Include="..\ArithmeticCalculatorOperationApi.Infrastructure\ArithmeticCalculatorOperationApi.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

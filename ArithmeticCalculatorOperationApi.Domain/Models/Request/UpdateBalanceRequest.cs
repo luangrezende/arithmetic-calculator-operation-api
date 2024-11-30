@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace ArithmeticCalculatorUserApi.Domain.Models.Request
+namespace ArithmeticCalculatorOperationApi.Domain.Models.Request
 {
     public class UpdateBalanceRequest
     {

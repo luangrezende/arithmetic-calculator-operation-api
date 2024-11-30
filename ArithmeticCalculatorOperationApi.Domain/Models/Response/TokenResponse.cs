@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace ArithmeticCalculatorUserApi.Domain.Models.Response
+namespace ArithmeticCalculatorOperationApi.Domain.Models.Response
 {
     public class TokenResponse
     {

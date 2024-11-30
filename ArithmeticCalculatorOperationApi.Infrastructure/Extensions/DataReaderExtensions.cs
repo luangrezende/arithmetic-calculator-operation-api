@@ -1,6 +1,6 @@
 ﻿using System.Data.Common;
 
-namespace ArithmeticCalculatorUserApi.Infrastructure.Extensions
+namespace ArithmeticCalculatorOperationApi.Infrastructure.Extensions
 {
     public static class DataReaderExtensions
     {

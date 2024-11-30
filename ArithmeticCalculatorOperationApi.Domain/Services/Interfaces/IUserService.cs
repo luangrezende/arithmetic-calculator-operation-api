@@ -1,6 +1,6 @@
-﻿using ArithmeticCalculatorUserApi.Domain.Models.DTO;
+﻿using ArithmeticCalculatorOperationApi.Domain.Models.DTO;
 
-namespace ArithmeticCalculatorUserApi.Domain.Services.Interfaces
+namespace ArithmeticCalculatorOperationApi.Domain.Services.Interfaces
 {
     public interface IUserService
     {

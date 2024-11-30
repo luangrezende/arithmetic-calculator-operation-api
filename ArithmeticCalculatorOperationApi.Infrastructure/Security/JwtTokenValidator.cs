@@ -2,7 +2,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 
-namespace ArithmeticCalculatorUserApi.Infrastructure.Security
+namespace ArithmeticCalculatorOperationApi.Infrastructure.Security
 {
     public class JwtTokenValidator
     {

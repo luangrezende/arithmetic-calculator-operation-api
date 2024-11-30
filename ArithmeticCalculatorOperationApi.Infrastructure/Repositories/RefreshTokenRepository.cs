@@ -1,8 +1,8 @@
-﻿using ArithmeticCalculatorUserApi.Infrastructure.Models;
+﻿using ArithmeticCalculatorOperationApi.Infrastructure.Models;
 using MySql.Data.MySqlClient;
 using System.Data;
 
-namespace ArithmeticCalculatorUserApi.Infrastructure.Repositories
+namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
 {
     public class RefreshTokenRepository : IRefreshTokenRepository
     {
