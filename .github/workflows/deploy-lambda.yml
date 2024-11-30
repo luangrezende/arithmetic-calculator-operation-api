@@ -1,0 +1,57 @@
+name: Deploy Lambda to AWS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 8.0
+
+      - name: Install Amazon Lambda Tools
+        run: dotnet tool install -g Amazon.Lambda.Tools
+
+      - name: Add .NET Tools to PATH
+        run: echo "${HOME}/.dotnet/tools" >> $GITHUB_PATH
+
+      - name: Install Dependencies
+        working-directory: ArithmeticCalculatorOperationApi.Api
+        run: dotnet restore
+
+      - name: Build and Package Lambda
+        working-directory: ArithmeticCalculatorOperationApi.Api
+        run: dotnet lambda package --configuration Release --output-package ../output/deployment.zip
+
+      - name: Configure AWS CLI
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Deploy Lambda Function
+        run: |
+          if aws lambda get-function --function-name ArithmeticCalculatorOperationApi; then
+            echo "Updating Lambda function"
+            aws lambda update-function-code \
+              --function-name ArithmeticCalculatorOperationApi \
+              --zip-file fileb://./output/deployment.zip
+          else
+            echo "Creating Lambda function"
+            aws lambda create-function \
+              --function-name ArithmeticCalculatorOperationApi \
+              --runtime dotnet8 \
+              --role arn:aws:iam::565393042425:role/ArithmeticCalculatorUserLambdaRole\
+              --handler ArithmeticCalculatorOperationApi::ArithmeticCalculatorOperationApi.Function::FunctionHandler \
+              --zip-file fileb://./output/deployment.zip
+          fi

@@ -1,0 +1,71 @@
+**/Properties/launchSettings.json
+
+# Visual Studio 2022
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build Folders (you can keep bin/ and obj/ if needed)
+bin/
+obj/
+Debug/
+Release/
+
+# AWS Lambda
+.publish/
+.aws-sam/
+*.zip
+
+# Dependency Caches
+**/node_modules/
+**/packages/
+
+# Log files
+*.log
+
+# IDE Specific
+.idea/
+.DS_Store
+
+# Test Results
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+
+# Package Management
+project.lock.json
+project.fragment.lock.json
+
+# ASP.NET
+*.vspscc
+*.vssscc
+*.dbmdl
+*.pdb
+*.publish.xml
+*.wuser
+
+# Resharper
+_ReSharper*
+*.DotSettings.user
+
+# Rider
+.idea/
+*.sln.iml
+
+# Docker
+docker-compose.override.yml
+.dockerignore
+
+# Additional AWS Specific
+.aws/
+terraform.tfstate
+terraform.tfstate.backup
+
+# Miscellaneous
+*.bak
+*.swp
+*.tmp
+*.tmp/*
