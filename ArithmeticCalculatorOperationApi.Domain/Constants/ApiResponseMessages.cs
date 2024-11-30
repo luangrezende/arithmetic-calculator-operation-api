@@ -1,4 +1,4 @@
-﻿namespace ArithmeticCalculatorUserApi.Domain.Constants
+﻿namespace ArithmeticCalculatorOperationApi.Domain.Constants
 {
     public static class ApiResponseMessages
     {

@@ -1,6 +1,6 @@
-﻿using ArithmeticCalculatorUserApi.Infrastructure.Models;
+﻿using ArithmeticCalculatorOperationApi.Infrastructure.Models;
 
-namespace ArithmeticCalculatorUserApi.Infrastructure.Repositories
+namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
 {
     public interface IUserRepository
     {

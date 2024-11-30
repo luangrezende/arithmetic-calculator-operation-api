@@ -1,10 +1,10 @@
-﻿using ArithmeticCalculatorUserApi.Domain.Enums;
-using ArithmeticCalculatorUserApi.Domain.Models.DTO;
-using ArithmeticCalculatorUserApi.Domain.Services.Interfaces;
-using ArithmeticCalculatorUserApi.Infrastructure.Models;
-using ArithmeticCalculatorUserApi.Infrastructure.Repositories;
+﻿using ArithmeticCalculatorOperationApi.Domain.Enums;
+using ArithmeticCalculatorOperationApi.Domain.Models.DTO;
+using ArithmeticCalculatorOperationApi.Domain.Services.Interfaces;
+using ArithmeticCalculatorOperationApi.Infrastructure.Models;
+using ArithmeticCalculatorOperationApi.Infrastructure.Repositories;
 
-namespace ArithmeticCalculatorUserApi.Domain.Services
+namespace ArithmeticCalculatorOperationApi.Domain.Services
 {
     public class RefreshTokenService : IRefreshTokenService
     {

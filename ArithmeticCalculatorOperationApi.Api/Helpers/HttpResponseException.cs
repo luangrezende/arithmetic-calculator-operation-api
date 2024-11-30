@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace ArithmeticCalculatorUserApi.Helpers
+namespace ArithmeticCalculatorOperationApi.Helpers
 {
     public class HttpResponseException : Exception
     {

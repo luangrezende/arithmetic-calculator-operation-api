@@ -1,4 +1,4 @@
-﻿namespace ArithmeticCalculatorUserApi.Infrastructure.Security
+﻿namespace ArithmeticCalculatorOperationApi.Infrastructure.Security
 {
     public static class PasswordHasher
     {

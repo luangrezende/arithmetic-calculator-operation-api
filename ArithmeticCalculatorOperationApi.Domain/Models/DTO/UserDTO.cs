@@ -1,7 +1,7 @@
-﻿using ArithmeticCalculatorUserApi.Domain.Enums;
+﻿using ArithmeticCalculatorOperationApi.Domain.Enums;
 using System.Text.Json.Serialization;
 
-namespace ArithmeticCalculatorUserApi.Domain.Models.DTO
+namespace ArithmeticCalculatorOperationApi.Domain.Models.DTO
 {
     public class UserDTO
     {

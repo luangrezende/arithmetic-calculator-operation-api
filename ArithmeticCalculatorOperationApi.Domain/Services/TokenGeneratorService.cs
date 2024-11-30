@@ -1,12 +1,12 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using ArithmeticCalculatorUserApi.Domain.Enums;
-using ArithmeticCalculatorUserApi.Domain.Models.DTO;
-using ArithmeticCalculatorUserApi.Domain.Services.Interfaces;
+using ArithmeticCalculatorOperationApi.Domain.Enums;
+using ArithmeticCalculatorOperationApi.Domain.Models.DTO;
+using ArithmeticCalculatorOperationApi.Domain.Services.Interfaces;
 using Microsoft.IdentityModel.Tokens;
 
-namespace ArithmeticCalculatorUserApi.Infrastructure.Security
+namespace ArithmeticCalculatorOperationApi.Infrastructure.Security
 {
     public class TokenGeneratorService : ITokenGeneratorService
     {

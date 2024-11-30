@@ -1,4 +1,4 @@
-﻿namespace ArithmeticCalculatorUserApi.Infrastructure.Models
+﻿namespace ArithmeticCalculatorOperationApi.Infrastructure.Models
 {
     public class BankAccountEntity
     {

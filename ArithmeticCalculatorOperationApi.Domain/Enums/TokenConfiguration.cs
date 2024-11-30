@@ -1,4 +1,4 @@
-﻿namespace ArithmeticCalculatorUserApi.Domain.Enums
+﻿namespace ArithmeticCalculatorOperationApi.Domain.Enums
 {
     public enum TokenConfiguration
     {

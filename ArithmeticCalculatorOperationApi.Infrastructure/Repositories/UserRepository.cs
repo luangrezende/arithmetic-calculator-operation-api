@@ -1,10 +1,10 @@
 ﻿using System.Data;
-using ArithmeticCalculatorUserApi.Infrastructure.Security;
-using ArithmeticCalculatorUserApi.Infrastructure.Extensions;
+using ArithmeticCalculatorOperationApi.Infrastructure.Security;
+using ArithmeticCalculatorOperationApi.Infrastructure.Extensions;
 using MySql.Data.MySqlClient;
-using ArithmeticCalculatorUserApi.Infrastructure.Models;
+using ArithmeticCalculatorOperationApi.Infrastructure.Models;
 
-namespace ArithmeticCalculatorUserApi.Infrastructure.Repositories
+namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
 {
     public class UserRepository : IUserRepository
     {

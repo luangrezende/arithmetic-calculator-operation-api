@@ -1,9 +1,9 @@
-﻿using ArithmeticCalculatorUserApi.Domain.Models.DTO;
-using ArithmeticCalculatorUserApi.Domain.Services.Interfaces;
-using ArithmeticCalculatorUserApi.Infrastructure.Repositories;
-using ArithmeticCalculatorUserApi.Infrastructure.Security;
+﻿using ArithmeticCalculatorOperationApi.Domain.Models.DTO;
+using ArithmeticCalculatorOperationApi.Domain.Services.Interfaces;
+using ArithmeticCalculatorOperationApi.Infrastructure.Repositories;
+using ArithmeticCalculatorOperationApi.Infrastructure.Security;
 
-namespace ArithmeticCalculatorUserApi.Domain.Services
+namespace ArithmeticCalculatorOperationApi.Domain.Services
 {
     public class UserService : IUserService
     {

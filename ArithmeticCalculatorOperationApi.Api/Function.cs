@@ -3,21 +3,21 @@ using System.Net;
 using System.Text.Json;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
-using ArithmeticCalculatorUserApi.Domain.Constants;
-using ArithmeticCalculatorUserApi.Domain.Enums;
-using ArithmeticCalculatorUserApi.Domain.Models.Request;
-using ArithmeticCalculatorUserApi.Domain.Models.Response;
-using ArithmeticCalculatorUserApi.Domain.Services;
-using ArithmeticCalculatorUserApi.Domain.Services.Interfaces;
-using ArithmeticCalculatorUserApi.Helpers;
-using ArithmeticCalculatorUserApi.Infrastructure.Repositories;
-using ArithmeticCalculatorUserApi.Infrastructure.Security;
+using ArithmeticCalculatorOperationApi.Domain.Constants;
+using ArithmeticCalculatorOperationApi.Domain.Enums;
+using ArithmeticCalculatorOperationApi.Domain.Models.Request;
+using ArithmeticCalculatorOperationApi.Domain.Models.Response;
+using ArithmeticCalculatorOperationApi.Domain.Services;
+using ArithmeticCalculatorOperationApi.Domain.Services.Interfaces;
+using ArithmeticCalculatorOperationApi.Helpers;
+using ArithmeticCalculatorOperationApi.Infrastructure.Repositories;
+using ArithmeticCalculatorOperationApi.Infrastructure.Security;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
 
-namespace ArithmeticCalculatorUserApi;
+namespace ArithmeticCalculatorOperationApi;
 
 public class Function
 {

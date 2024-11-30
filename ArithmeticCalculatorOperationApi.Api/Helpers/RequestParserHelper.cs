@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
-using ArithmeticCalculatorUserApi.Domain.Constants;
+using ArithmeticCalculatorOperationApi.Domain.Constants;
 
-namespace ArithmeticCalculatorUserApi.Helpers
+namespace ArithmeticCalculatorOperationApi.Helpers
 {
     public static class RequestParserHelper
     {
