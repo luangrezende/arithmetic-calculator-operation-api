@@ -2,6 +2,6 @@
 {
     public class ApiConfigurations
     {
-        public const string ApiPrefix = "/user";
+        public const string ApiPrefix = "/operation";
     }
 }
