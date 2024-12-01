@@ -77,7 +77,8 @@ public class Function
         catch (Exception ex)
         {
             context.Logger.LogError($"Unhandled exception: {ex.Message}");
-            return BuildResponse(HttpStatusCode.InternalServerError, new { error = ApiResponseMessages.InternalServerError });
+            //return BuildResponse(HttpStatusCode.InternalServerError, new { error = ApiResponseMessages.InternalServerError });
+            return BuildResponse(HttpStatusCode.InternalServerError, new { error = ex.Message });
         }
     }
 
