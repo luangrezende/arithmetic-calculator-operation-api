@@ -1,11 +1,6 @@
 ﻿using ArithmeticCalculatorOperationApi.Infrastructure.Models;
 using ArithmeticCalculatorOperationApi.Infrastructure.Repositories.Interfaces;
 using MySql.Data.MySqlClient;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
 {
@@ -19,8 +14,10 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
                                 ?? throw new InvalidOperationException("Connection string is not set.");
         }
 
-        public async Task<bool> SaveOperationRecordAsync(OperationRecordEntity operationRecord)
+        public async Task<bool> SaveRecordAsync(OperationRecordEntity operationRecord)
         {
+            var operationId = Guid.NewGuid();
+
             const string query = @"
             INSERT INTO record (
                 id, 
@@ -46,7 +43,7 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
             await connection.OpenAsync();
 
             using var cmd = new MySqlCommand(query, connection);
-            cmd.Parameters.Add(new MySqlParameter("@Id", MySqlDbType.Guid) { Value = operationRecord.Id });
+            cmd.Parameters.Add(new MySqlParameter("@Id", MySqlDbType.Guid) { Value = operationId });
             cmd.Parameters.Add(new MySqlParameter("@OperationTypeId", MySqlDbType.Guid) { Value = operationRecord.OperationTypeId });
             cmd.Parameters.Add(new MySqlParameter("@UserId", MySqlDbType.Guid) { Value = operationRecord.UserId });
             cmd.Parameters.Add(new MySqlParameter("@Cost", MySqlDbType.Decimal) { Value = operationRecord.Cost });
