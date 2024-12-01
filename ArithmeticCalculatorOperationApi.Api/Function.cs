@@ -135,7 +135,7 @@ public class Function
             UserId = userId,
             OperationTypeId = addOperationRequest.OperationTypeId,
             Cost = operation.Cost,
-            UserBalance = await userService.GetUserBalanceAsync(accountId, token),
+            UserBalance = await userService.GetUserBalanceAsync(addOperationRequest.AccountId, token),
             OperationValues = operationValues,
             OperationResult = result
         };
