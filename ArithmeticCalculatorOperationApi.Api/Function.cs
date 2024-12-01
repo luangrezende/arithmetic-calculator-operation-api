@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Net;
+using System.Net.Http.Json;
 using System.Text.Json;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
@@ -121,11 +122,8 @@ public class Function
         var debitResponse = await userService.DebitUserBalanceAsync(addOperationRequest.AccountId, operation!.Cost, token);
         if (!debitResponse.IsSuccessStatusCode)
         {
-            var errorContent = await debitResponse.Content.ReadAsStringAsync();
-            return BuildResponse(HttpStatusCode.BadRequest, new
-            {
-                error = errorContent
-            });
+            var errorContent = await debitResponse.Content.ReadFromJsonAsync<UserApiResponse<ErrorApiUserResponse>>();
+            return BuildResponse(HttpStatusCode.BadRequest, errorContent!.Data);
         }
 
         var (result, operationValues) = await operationService.CalculateOperationResult(operation.Description, addOperationRequest.Value1, addOperationRequest.Value2);

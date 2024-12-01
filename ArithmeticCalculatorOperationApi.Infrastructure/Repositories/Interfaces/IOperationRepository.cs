@@ -4,6 +4,6 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories.Interface
 {
     public interface IOperationRepository
     {
-        Task<bool> SaveOperationRecordAsync(OperationRecordEntity operationRecord);
+        Task<bool> SaveRecordAsync(OperationRecordEntity operationRecord);
     }
 }

@@ -48,7 +48,7 @@ namespace ArithmeticCalculatorOperationApi.Domain.Services
 
         public async Task<bool> SaveOperationRecordAsync(OperationRecordDTO operationRecord)
         {
-            return await _operationRepository.SaveOperationRecordAsync(new OperationRecordEntity
+            return await _operationRepository.SaveRecordAsync(new OperationRecordEntity
             {
                 Cost = operationRecord.Cost,
                 OperationResult = operationRecord.OperationResult,
