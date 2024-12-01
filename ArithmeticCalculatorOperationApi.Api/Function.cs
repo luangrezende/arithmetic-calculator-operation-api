@@ -54,7 +54,7 @@ public class Function
 
             return request.HttpMethod switch
             {
-                "POST" when request.Path == "/v1/operation/add" => await AddOperation(request),
+                "POST" when request.Path == "/v1/operations" => await AddOperation(request),
                 _ => BuildResponse(HttpStatusCode.NotFound, new { error = ApiResponseMessages.EndpointNotFound }),
             };
         }
