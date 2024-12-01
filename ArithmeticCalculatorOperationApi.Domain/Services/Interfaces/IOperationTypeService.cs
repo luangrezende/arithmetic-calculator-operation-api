@@ -2,8 +2,8 @@
 
 namespace ArithmeticCalculatorOperationApi.Domain.Services.Interfaces
 {
-    public interface ITokenGeneratorService
+    public interface IOperationTypeService
     {
-        string GenerateToken(UserDTO user);
+        Task<OperationTypeDTO?> GetByIdAsync(Guid id);
     }
 }

@@ -1,67 +1,77 @@
-﻿using ArithmeticCalculatorOperationApi.Domain.Models.DTO;
+﻿using ArithmeticCalculatorOperationApi.Domain.Models.Request;
+using ArithmeticCalculatorOperationApi.Domain.Models.Response;
 using ArithmeticCalculatorOperationApi.Domain.Services.Interfaces;
-using ArithmeticCalculatorOperationApi.Infrastructure.Repositories;
-using ArithmeticCalculatorOperationApi.Infrastructure.Security;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
 
 namespace ArithmeticCalculatorOperationApi.Domain.Services
 {
     public class UserService : IUserService
     {
-        private readonly IUserRepository _userRepository;
+        private readonly HttpClient _httpClient;
 
-        public UserService(IUserRepository userRepository)
+        public UserService(HttpClient httpClient)
         {
-            _userRepository = userRepository;
+            _httpClient = httpClient;
         }
 
-        public async Task<UserDTO?> AuthenticateAsync(string username, string password)
+        public async Task<HttpResponseMessage> DebitUserBalanceAsync(Guid accountId, decimal amount, string token)
         {
-            var user = await _userRepository.GetUserByUsernameAsync(username);
-
-            if (user == null)
-                return null;
-
-            if (!PasswordHasher.VerifyPassword(password, user.Password!))
-                return null;
-
-            return new UserDTO
-            {
-                Id = user.Id,
-                Username = user.Username,
-                Status = user.Status,
-                Name = user.Name,
+            var requestUrl = GetEnvironmentVariableOrThrow("UserDebitApiEndpoint");
+            var requestBody = new UpdateBalanceRequest 
+            { 
+                Amount = amount,
+                AccountId = accountId 
             };
+
+            return await SendRequestAsync(HttpMethod.Put, requestUrl, token, requestBody);
         }
 
-        public async Task<bool> CreateUserAsync(string username, string password, string name)
+        public async Task<decimal> GetUserBalanceAsync(Guid accountId, string token)
         {
-            return await _userRepository.CreateUserAsync(username, password, name);
-        }
+            var requestUrl = GetEnvironmentVariableOrThrow("UserProfileApiEndpoint");
 
-        public async Task<UserDTO?> GetUserByIdAsync(Guid userId)
-        {
-            var result = await _userRepository.GetUserByIdAsync(userId);
+            var response = await SendRequestAsync(HttpMethod.Get, requestUrl, token);
 
-            return result == null ? null : new UserDTO
+            if (!response.IsSuccessStatusCode)
             {
-                Id = result!.Id,
-                Username = result.Username,
-                Status = result.Status,
-                Name = result.Name,
-            };
+                throw new HttpRequestException($"Failed to fetch user profile. Status code: {response.StatusCode}");
+            }
+
+            var userProfileResponse = await response.Content.ReadFromJsonAsync<UserApiResponse<UserProfileResponse>>();
+            if (userProfileResponse?.Data.Accounts == null || !userProfileResponse.Data.Accounts.Any())
+            {
+                throw new InvalidOperationException("User profile response is empty or invalid.");
+            }
+
+            var account = userProfileResponse.Data.Accounts.FirstOrDefault(x => x.Id == accountId);
+            if (account == null)
+            {
+                throw new KeyNotFoundException($"Account with ID {accountId} not found.");
+            }
+
+            return account.Balance;
         }
 
-        public async Task<UserDTO?> GetUserByUsernameAsync(string username)
+        private async Task<HttpResponseMessage> SendRequestAsync(HttpMethod method, string url, string token, object? body = null)
         {
-            var result = await _userRepository.GetUserByUsernameAsync(username);
-
-            return result == null ? null : new UserDTO
+            var request = new HttpRequestMessage(method, url)
             {
-                Id = result!.Id,
-                Username = result.Username,
-                Status = result.Status,
-                Name = result.Name,
+                Content = body != null ? JsonContent.Create(body) : null
             };
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            return await _httpClient.SendAsync(request);
+        }
+
+        private static string GetEnvironmentVariableOrThrow(string key)
+        {
+            var value = Environment.GetEnvironmentVariable(key);
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                throw new InvalidOperationException($"Environment variable '{key}' is not set.");
+            }
+            return value;
         }
     }
 }

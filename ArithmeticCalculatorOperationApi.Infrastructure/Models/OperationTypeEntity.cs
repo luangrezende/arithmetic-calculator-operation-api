@@ -1,14 +1,12 @@
 ﻿namespace ArithmeticCalculatorOperationApi.Infrastructure.Models
 {
-    public class BankAccountEntity
+    public class OperationTypeEntity
     {
         public Guid Id { get; set; }
 
-        public Guid UserId { get; set; }
+        public string Description { get; set; }
 
-        public decimal Balance { get; set; }
-
-        public string Currency { get; set; }
+        public decimal Cost { get; set; }
 
         public DateTime CreatedAt { get; set; }
 
