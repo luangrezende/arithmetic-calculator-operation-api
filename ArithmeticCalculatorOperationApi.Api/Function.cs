@@ -127,7 +127,7 @@ public class Function
                 error = ApiResponseMessages.OperationNotFound
             });
 
-        //var debitResponse = await userService.DebitUserBalanceDirectAsync(addOperationRequest.AccountId, operation!.Cost, token);
+        var debitResponse = await userService.DebitUserBalanceDirectAsync(addOperationRequest.AccountId, operation!.Cost, token);
         //if (!debitResponse.IsSuccessStatusCode)
         //{
         //    var errorContent = await debitResponse.Content.ReadFromJsonAsync<UserApiResponse<ErrorApiUserResponse>>();
