@@ -50,9 +50,7 @@ public class UserService : IUserService
         var profileResponse = await _lambdaInvoker.InvokeLambdaAsync<OuterResponse>(FunctionName, profilePayload);
 
         if (profileResponse.StatusCode != 200 || profileResponse.Body == null)
-        {
             throw new InvalidOperationException("Failed to process the profile response from the Lambda function.");
-        }
 
         var profileInnerResponse = JsonSerializer.Deserialize<UserApiResponse<UserProfileResponse>>(profileResponse.Body);
 
