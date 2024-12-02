@@ -5,11 +5,12 @@ using System.Text.Json;
 public class UserService : IUserService
 {
     private readonly LambdaInvoker _lambdaInvoker;
-    private const string FunctionName = "arn:aws:lambda:us-east-1:565393042425:function:ArithmeticCalculatorUserApi";
+    private string FunctionName;
 
     public UserService(LambdaInvoker lambdaInvoker)
     {
         _lambdaInvoker = lambdaInvoker;
+        FunctionName = Environment.GetEnvironmentVariable("ArithmeticCalculatorUserApiFunctionArn")!;
     }
 
     public async Task<decimal> DebitUserBalanceDirectAsync(Guid accountId, decimal operationCost, string token)
@@ -23,7 +24,7 @@ public class UserService : IUserService
         var payload = new
         {
             httpMethod = "PUT",
-            path = "/v1/user/account/balance",
+            path = Environment.GetEnvironmentVariable("UserDebitApiEndpoint"),
             body = JsonSerializer.Serialize(bodyContent),
             headers = new
             {
@@ -44,7 +45,7 @@ public class UserService : IUserService
         var profilePayload = new
         {
             httpMethod = "GET",
-            path = "/v1/user/profile",
+            path = Environment.GetEnvironmentVariable("UserProfileApiEndpoint"),
             headers = new { Authorization = $"Bearer {token}" }
         };
 
