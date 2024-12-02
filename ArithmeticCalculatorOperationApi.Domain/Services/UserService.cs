@@ -100,15 +100,13 @@ namespace ArithmeticCalculatorOperationApi.Domain.Services
             var bodyContent = new
             {
                 accountId = accountId.ToString(),
-                operationTypeId = "890e12a6-b005-11ef-8f29-12c507f2b237",
-                value1 = 1,
-                value2 = 2
+                amount = 2.50,
             };
 
             var payload = new
             {
                 httpMethod = "POST",
-                path = "/v1/operations",
+                path = "/v1/user/account/balance",
                 body = JsonSerializer.Serialize(bodyContent),
                 headers = new
                 {
