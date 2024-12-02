@@ -9,6 +9,7 @@
   <ItemGroup>
     <PackageReference Include="AWSSDK.Lambda" Version="3.7.411.1" />
     <PackageReference Include="MySql.Data" Version="9.1.0" />
+    <PackageReference Include="Polly" Version="8.5.0" />
   </ItemGroup>
 
   <ItemGroup>

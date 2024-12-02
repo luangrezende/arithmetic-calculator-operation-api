@@ -37,6 +37,7 @@ public class Function
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IOperationTypeService, OperationTypeService>();
         services.AddScoped<IOperationService, OperationService>();
+        services.AddScoped<IRandomStringService, RandomStringService>();
 
         services.AddScoped<HttpClient>();
         services.AddScoped<LambdaInvoker>();
@@ -58,8 +59,6 @@ public class Function
 
             return request.HttpMethod switch
             {
-                "GET" when request.Path == "/v1/operations/test" => await Test(request),
-
                 "POST" when request.Path == "/v1/operations" => await AddOperation(request),
                 _ => BuildResponse(HttpStatusCode.NotFound, new { error = ApiResponseMessages.EndpointNotFound }),
             };
@@ -84,40 +83,6 @@ public class Function
             context.Logger.LogError($"Exception: {ex.Message}");
             //return BuildResponse(HttpStatusCode.InternalServerError, new { error = ApiResponseMessages.InternalServerError });
             return BuildResponse(HttpStatusCode.InternalServerError, new { error = ex.Message });
-        }
-    }
-
-    private async Task<APIGatewayProxyResponse> Test(APIGatewayProxyRequest request)
-    {
-        try
-        {
-            var bodyContent = new
-            {
-                test = "test",
-                amount = 2.50,
-            };
-
-            var payload = new
-            {
-                httpMethod = "GET",
-                path = "/v1/user/test",
-                body = JsonSerializer.Serialize(bodyContent),
-            };
-
-            var client = new AmazonLambdaClient();
-            var requestLambda = new Amazon.Lambda.Model.InvokeRequest
-            {
-                FunctionName = "arn:aws:lambda:us-east-1:565393042425:function:ArithmeticCalculatorUserApi",
-                Payload = JsonSerializer.Serialize(payload),
-                InvocationType = InvocationType.RequestResponse
-            };
-            var response = await client.InvokeAsync(requestLambda);
-
-            return BuildResponse(HttpStatusCode.OK, "test ok");
-        }
-        catch (Exception ex)
-        {
-            return BuildResponse(HttpStatusCode.OK, ex.Message); ;
         }
     }
 
@@ -159,9 +124,9 @@ public class Function
                 error = ApiResponseMessages.OperationNotFound
             });
 
+        var (result, operationValues) = await operationService.CalculateOperationResult(operation!.Description, addOperationRequest.Value1, addOperationRequest.Value2);
+        
         var updatedBalance = await userService.DebitUserBalanceDirectAsync(addOperationRequest.AccountId, operation!.Cost, token);
-
-        var (result, operationValues) = await operationService.CalculateOperationResult(operation.Description, addOperationRequest.Value1, addOperationRequest.Value2);
 
         var operationDto = new OperationRecordDTO
         {
