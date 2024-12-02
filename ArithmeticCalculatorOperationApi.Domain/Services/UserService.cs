@@ -5,35 +5,36 @@ using System.Text.Json;
 public class UserService : IUserService
 {
     private readonly LambdaInvoker _lambdaInvoker;
-    private const string FunctionName = "ArithmeticCalculatorUserApi";
+    private const string FunctionName = "arn:aws:lambda:us-east-1:565393042425:function:ArithmeticCalculatorUserApi";
 
     public UserService(LambdaInvoker lambdaInvoker)
     {
         _lambdaInvoker = lambdaInvoker;
     }
 
-    public async Task<decimal> DebitUserBalanceDirectAsync(Guid accountId, decimal amount, string token)
+    public async Task<decimal> DebitUserBalanceDirectAsync(Guid accountId, decimal operationCost, string token)
     {
-        var debitPayload = new
+        var bodyContent = new
+        {
+            accountId = accountId.ToString(),
+            amount = operationCost
+        };
+
+        var payload = new
         {
             httpMethod = "PUT",
             path = "/v1/user/account/balance",
-            body = new
+            body = JsonSerializer.Serialize(bodyContent),
+            headers = new
             {
-                accountId = accountId.ToString(),
-                amount
-            },
-            headers = new { Authorization = $"Bearer {token}" }
+                Authorization = $"Bearer {token}"
+            }
         };
 
-        var debitResponse = await _lambdaInvoker.InvokeLambdaAsync<OuterResponse>(FunctionName, debitPayload);
+        var debitResponse = await _lambdaInvoker.InvokeLambdaAsync<OuterResponse>(FunctionName, payload);
 
         if (debitResponse.StatusCode != 200 || debitResponse.Body == null)
-        {
-            var test = JsonSerializer.Serialize(debitResponse);
-
-            throw new InvalidOperationException($"Failed to process the debit response from the Lambda function. RESPONSE: {test}");
-        }
+            throw new InvalidOperationException($"Failed to process the debit response from the Lambda function.");
 
         return await GetUpdatedBalanceAsync(accountId, token);
     }

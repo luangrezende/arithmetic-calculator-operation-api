@@ -32,9 +32,6 @@ public class LambdaInvoker
         using var reader = new StreamReader(response.Payload);
         var responseContent = await reader.ReadToEndAsync();
 
-        Console.WriteLine("Raw Response Payload:");
-        Console.WriteLine(responseContent);
-
         return JsonSerializer.Deserialize<T>(responseContent)
                ?? throw new InvalidOperationException($"Invalid response from Lambda {functionName}.");
     }
