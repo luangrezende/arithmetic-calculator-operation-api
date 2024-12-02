@@ -13,18 +13,17 @@ namespace ArithmeticCalculatorOperationApi.Domain.Services
 
         public async Task<string> GenerateRandomStringAsync()
         {
-            try
-            {
-                var response = await _httpClient.GetAsync(Environment.GetEnvironmentVariable("RandomStringEndpoint"));
-                response.EnsureSuccessStatusCode();
+            Console.WriteLine($"starting generating random string: URL {Environment.GetEnvironmentVariable("RandomStringEndpoint")}");
+            var response = await _httpClient.GetAsync(Environment.GetEnvironmentVariable("RandomStringEndpoint"));
 
-                var randomString = await response.Content.ReadAsStringAsync();
-                return randomString.Trim();
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException($"Failed to generate random string. Please try again later. {ex.Message}");
-            }
+            Console.WriteLine(response.StatusCode);
+            Console.WriteLine(response.ToString());
+            Console.WriteLine(response.Content);
+
+            response.EnsureSuccessStatusCode();
+
+            var randomString = await response.Content.ReadAsStringAsync();
+            return randomString.Trim();
         }
     }
 }
