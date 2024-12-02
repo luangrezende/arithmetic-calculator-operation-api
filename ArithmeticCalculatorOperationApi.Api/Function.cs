@@ -39,6 +39,7 @@ public class Function
         services.AddScoped<IOperationService, OperationService>();
 
         services.AddScoped<HttpClient>();
+        services.AddScoped<LambdaInvoker>();
 
         services.AddScoped<IOperationRepository, OperationRepository>();
         services.AddScoped<IOperationTypeRepository, OperationTypeRepository>();
@@ -65,25 +66,22 @@ public class Function
         }
         catch (HttpResponseException ex)
         {
-            Console.WriteLine(ex.Message);
             context.Logger.LogError($"HttpResponseException: {ex.Message}");
             return BuildResponse(ex.StatusCode, new { error = ex.ResponseBody ?? ApiResponseMessages.GenericError });
         }
         catch (SecurityTokenExpiredException ex)
         {
-            Console.WriteLine(ex.Message);
             context.Logger.LogError($"SecurityTokenExpiredException: {ex.Message}");
             return BuildResponse(HttpStatusCode.Unauthorized, new { error = ApiResponseMessages.TokenExpired });
         } 
         catch (SecurityTokenMalformedException ex)
         {
-            Console.WriteLine(ex.Message);
             context.Logger.LogError($"SecurityTokenMalformedException: {ex.Message}");
             return BuildResponse(HttpStatusCode.BadRequest, new { error = ApiResponseMessages.InvalidToken });
         }
         catch (Exception ex)
         {
-            context.Logger.LogError($"Unhandled exception: {ex.Message}");
+            context.Logger.LogError($"Exception: {ex.Message}");
             //return BuildResponse(HttpStatusCode.InternalServerError, new { error = ApiResponseMessages.InternalServerError });
             return BuildResponse(HttpStatusCode.InternalServerError, new { error = ex.Message });
         }
@@ -114,7 +112,6 @@ public class Function
                 InvocationType = InvocationType.RequestResponse
             };
             var response = await client.InvokeAsync(requestLambda);
-            Console.WriteLine(response.HttpStatusCode);
 
             return BuildResponse(HttpStatusCode.OK, "test ok");
         }
