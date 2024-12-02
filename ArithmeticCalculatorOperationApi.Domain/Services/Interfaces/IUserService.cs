@@ -2,8 +2,6 @@
 {
     public interface IUserService
     {
-        Task<HttpResponseMessage> DebitUserBalanceAsync(Guid accountId, decimal amount, string token);
-        
-        Task<decimal> GetUserBalanceAsync(Guid accountId, string token);
+        Task<decimal> DebitUserBalanceDirectAsync(Guid accountId, decimal amount, string token);
     }
 }
