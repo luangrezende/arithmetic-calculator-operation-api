@@ -30,7 +30,9 @@ public class UserService : IUserService
 
         if (debitResponse.StatusCode != 200 || debitResponse.Body == null)
         {
-            throw new InvalidOperationException("Failed to process the debit response from the Lambda function.");
+            var test = JsonSerializer.Serialize(debitResponse)
+
+            throw new InvalidOperationException($"Failed to process the debit response from the Lambda function. RESPONSE: {test}");
         }
 
         return await GetUpdatedBalanceAsync(accountId, token);
