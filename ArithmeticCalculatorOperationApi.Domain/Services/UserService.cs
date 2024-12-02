@@ -129,6 +129,7 @@ namespace ArithmeticCalculatorOperationApi.Domain.Services
 
             if (debitResponse.StatusCode != 200)
             {
+                Console.WriteLine($"Failed to invoke Lambda function {functionName}. Status code: {debitResponse.StatusCode}");
                 throw new InvalidOperationException($"Failed to invoke Lambda function {functionName}. Status code: {debitResponse.StatusCode}");
             }
 

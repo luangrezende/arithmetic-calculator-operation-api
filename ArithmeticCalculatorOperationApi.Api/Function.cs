@@ -112,6 +112,7 @@ public class Function
 
     private async Task<APIGatewayProxyResponse> AddOperation(APIGatewayProxyRequest request)
     {
+        Console.WriteLine("start addoperation");
         var (userId, token) = ValidateTokenAndReturnOrThrow(request);
 
         var addOperationRequest = ParseRequestOrThrow<AddOperationRequest>(request.Body);
@@ -128,6 +129,7 @@ public class Function
             });
 
         var debitResponse = await userService.DebitUserBalanceDirectAsync(addOperationRequest.AccountId, operation!.Cost, token);
+        Console.WriteLine("debit ok");
         //if (!debitResponse.IsSuccessStatusCode)
         //{
         //    var errorContent = await debitResponse.Content.ReadFromJsonAsync<UserApiResponse<ErrorApiUserResponse>>();
@@ -148,6 +150,8 @@ public class Function
         };
 
         await operationService.SaveOperationRecordAsync(operationDto);
+
+        Console.WriteLine("save operation");
 
         return BuildResponse(HttpStatusCode.OK, new OperationResponse
         {
