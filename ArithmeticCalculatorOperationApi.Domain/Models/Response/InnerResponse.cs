@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text.Json.Serialization;
 
 namespace ArithmeticCalculatorOperationApi.Domain.Models.Response
 {
     public class InnerResponse
     {
+        [JsonPropertyName("statusCode")]
         public int StatusCode { get; set; }
+
+        [JsonPropertyName("data")]
         public InnerData? Data { get; set; }
     }
 }
