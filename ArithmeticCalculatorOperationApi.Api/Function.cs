@@ -114,18 +114,18 @@ public class Function
     {
         var (userId, token) = ValidateTokenAndReturnOrThrow(request);
 
-        //var addOperationRequest = ParseRequestOrThrow<AddOperationRequest>(request.Body);
+        var addOperationRequest = ParseRequestOrThrow<AddOperationRequest>(request.Body);
 
-        //var operationTypeService = _serviceProvider.GetRequiredService<IOperationTypeService>();
-        //var operationService = _serviceProvider.GetRequiredService<IOperationService>();
-        //var userService = _serviceProvider.GetRequiredService<IUserService>();
+        var operationTypeService = _serviceProvider.GetRequiredService<IOperationTypeService>();
+        var operationService = _serviceProvider.GetRequiredService<IOperationService>();
+        var userService = _serviceProvider.GetRequiredService<IUserService>();
 
-        //var operation = await operationTypeService.GetByIdAsync(addOperationRequest.OperationTypeId);
-        //if (operation?.Id == Guid.Empty)
-        //    return BuildResponse(HttpStatusCode.BadRequest, new
-        //    {
-        //        error = ApiResponseMessages.OperationNotFound
-        //    });
+        var operation = await operationTypeService.GetByIdAsync(addOperationRequest.OperationTypeId);
+        if (operation?.Id == Guid.Empty)
+            return BuildResponse(HttpStatusCode.BadRequest, new
+            {
+                error = ApiResponseMessages.OperationNotFound
+            });
 
         //var debitResponse = await userService.DebitUserBalanceDirectAsync(addOperationRequest.AccountId, operation!.Cost, token);
         //if (!debitResponse.IsSuccessStatusCode)
@@ -141,7 +141,7 @@ public class Function
         //    UserId = userId,
         //    OperationTypeId = addOperationRequest.OperationTypeId,
         //    Cost = operation.Cost,
-            //UserBalance = await userService.GetUserBalanceAsync(addOperationRequest.AccountId, token),
+        //UserBalance = await userService.GetUserBalanceAsync(addOperationRequest.AccountId, token),
         //    UserBalance = debitResponse,
         //    OperationValues = operationValues,
         //    OperationResult = result
