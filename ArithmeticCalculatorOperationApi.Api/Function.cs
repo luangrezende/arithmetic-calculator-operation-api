@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using Amazon.Lambda;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
 using ArithmeticCalculatorOperationApi.Domain.Constants;
@@ -34,6 +35,7 @@ public class Function
 
     private void ConfigureServices(IServiceCollection services)
     {
+        // Serviços customizados
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IOperationTypeService, OperationTypeService>();
         services.AddScoped<IOperationService, OperationService>();
@@ -44,6 +46,9 @@ public class Function
         services.AddScoped<IOperationTypeRepository, OperationTypeRepository>();
 
         services.AddScoped(sp => new JwtTokenValidator(Environment.GetEnvironmentVariable("jwtSecretKey")!));
+
+        // Registro do IAmazonLambda
+        services.AddAWSService<IAmazonLambda>();
     }
 
     public async Task<APIGatewayProxyResponse> FunctionHandler(APIGatewayProxyRequest request, ILambdaContext context)
