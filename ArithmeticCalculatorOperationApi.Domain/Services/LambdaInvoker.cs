@@ -24,10 +24,6 @@ public class LambdaInvoker
 
         var response = await _lambdaClient.InvokeAsync(request);
 
-        var test = JsonSerializer.Serialize(response);
-
-        Console.WriteLine(test);
-
         if (response.StatusCode != 200)
         {
             throw new InvalidOperationException($"Failed to invoke Lambda function {functionName}. Status code: {response.StatusCode}");
@@ -35,6 +31,9 @@ public class LambdaInvoker
 
         using var reader = new StreamReader(response.Payload);
         var responseContent = await reader.ReadToEndAsync();
+
+        Console.WriteLine("Raw Response Payload:");
+        Console.WriteLine(responseContent);
 
         return JsonSerializer.Deserialize<T>(responseContent)
                ?? throw new InvalidOperationException($"Invalid response from Lambda {functionName}.");
