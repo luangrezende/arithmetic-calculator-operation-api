@@ -56,7 +56,7 @@ public class Function
 
             return request.HttpMethod switch
             {
-                "POST" when request.Path == "/v1/operations/test" => await Test(request),
+                "GET" when request.Path == "/v1/operations/test" => await Test(request),
 
                 "POST" when request.Path == "/v1/operations" => await AddOperation(request),
                 _ => BuildResponse(HttpStatusCode.NotFound, new { error = ApiResponseMessages.EndpointNotFound }),
@@ -92,11 +92,24 @@ public class Function
     {
         try
         {
+            var bodyContent = new
+            {
+                test = "test",
+                amount = 2.50,
+            };
+
+            var payload = new
+            {
+                httpMethod = "GET",
+                path = "/v1/user/test",
+                body = JsonSerializer.Serialize(bodyContent),
+            };
+
             var client = new AmazonLambdaClient();
             var requestLambda = new Amazon.Lambda.Model.InvokeRequest
             {
                 FunctionName = "arn:aws:lambda:us-east-1:565393042425:function:ArithmeticCalculatorUserApi",
-                Payload = "{\"test\":\"123\"}",
+                Payload = JsonSerializer.Serialize(payload),
                 InvocationType = InvocationType.RequestResponse
             };
             var response = await client.InvokeAsync(requestLambda);
