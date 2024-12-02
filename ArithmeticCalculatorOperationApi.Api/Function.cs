@@ -5,6 +5,7 @@ using System.Text.Json;
 using Amazon.Lambda;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
+using Amazon.Lambda.Model;
 using ArithmeticCalculatorOperationApi.Domain.Constants;
 using ArithmeticCalculatorOperationApi.Domain.Models.DTO;
 using ArithmeticCalculatorOperationApi.Domain.Models.Request;
@@ -58,6 +59,8 @@ public class Function
 
             return request.HttpMethod switch
             {
+                "POST" when request.Path == "/v1/operations/test" => await Test(request),
+
                 "POST" when request.Path == "/v1/operations" => await AddOperation(request),
                 _ => BuildResponse(HttpStatusCode.NotFound, new { error = ApiResponseMessages.EndpointNotFound }),
             };
@@ -83,9 +86,30 @@ public class Function
         catch (Exception ex)
         {
             context.Logger.LogError($"Unhandled exception: {ex.Message}");
-            Console.WriteLine(ex.Message);
             //return BuildResponse(HttpStatusCode.InternalServerError, new { error = ApiResponseMessages.InternalServerError });
             return BuildResponse(HttpStatusCode.InternalServerError, new { error = ex.Message });
+        }
+    }
+
+    private async Task<APIGatewayProxyResponse> Test(APIGatewayProxyRequest request)
+    {
+        try
+        {
+            var client = new AmazonLambdaClient();
+            var requestLambda = new InvokeRequest
+            {
+                FunctionName = "arn:aws:lambda:us-east-1:565393042425:function:ArithmeticCalculatorUserApi",
+                Payload = "{\"test\":\"123\"}",
+                InvocationType = InvocationType.RequestResponse
+            };
+            var response = await client.InvokeAsync(requestLambda);
+            Console.WriteLine(response.HttpStatusCode);
+
+            return BuildResponse(HttpStatusCode.OK, "test ok");
+        }
+        catch (Exception ex)
+        {
+            return BuildResponse(HttpStatusCode.OK, ex.Message); ;
         }
     }
 
