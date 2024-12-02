@@ -1,13 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using System.Net;
-using System.Net.Http.Json;
 using System.Text.Json;
 using Amazon.Lambda;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
-using Amazon.Lambda.Model;
 using ArithmeticCalculatorOperationApi.Domain.Constants;
-using ArithmeticCalculatorOperationApi.Domain.Models.DTO;
 using ArithmeticCalculatorOperationApi.Domain.Models.Request;
 using ArithmeticCalculatorOperationApi.Domain.Models.Response;
 using ArithmeticCalculatorOperationApi.Domain.Services;
@@ -96,7 +93,7 @@ public class Function
         try
         {
             var client = new AmazonLambdaClient();
-            var requestLambda = new InvokeRequest
+            var requestLambda = new Amazon.Lambda.Model.InvokeRequest
             {
                 FunctionName = "arn:aws:lambda:us-east-1:565393042425:function:ArithmeticCalculatorUserApi",
                 Payload = "{\"test\":\"123\"}",
