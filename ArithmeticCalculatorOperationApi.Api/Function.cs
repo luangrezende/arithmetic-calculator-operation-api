@@ -120,12 +120,12 @@ public class Function
                 error = ApiResponseMessages.OperationNotFound
             });
 
-        var debitResponse = await userService.DebitUserBalanceAsync(addOperationRequest.AccountId, operation!.Cost, token);
-        if (!debitResponse.IsSuccessStatusCode)
-        {
-            var errorContent = await debitResponse.Content.ReadFromJsonAsync<UserApiResponse<ErrorApiUserResponse>>();
-            return BuildResponse(HttpStatusCode.BadRequest, errorContent!.Data);
-        }
+        var debitResponse = await userService.DebitUserBalanceDirectAsync(addOperationRequest.AccountId, operation!.Cost, token);
+        //if (!debitResponse.IsSuccessStatusCode)
+        //{
+        //    var errorContent = await debitResponse.Content.ReadFromJsonAsync<UserApiResponse<ErrorApiUserResponse>>();
+        //    return BuildResponse(HttpStatusCode.BadRequest, errorContent!.Data);
+        //}
 
         var (result, operationValues) = await operationService.CalculateOperationResult(operation.Description, addOperationRequest.Value1, addOperationRequest.Value2);
 
@@ -134,7 +134,8 @@ public class Function
             UserId = userId,
             OperationTypeId = addOperationRequest.OperationTypeId,
             Cost = operation.Cost,
-            UserBalance = await userService.GetUserBalanceAsync(addOperationRequest.AccountId, token),
+            //UserBalance = await userService.GetUserBalanceAsync(addOperationRequest.AccountId, token),
+            UserBalance = debitResponse,
             OperationValues = operationValues,
             OperationResult = result
         };
