@@ -5,6 +5,7 @@ using Amazon.Lambda;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
 using ArithmeticCalculatorOperationApi.Domain.Constants;
+using ArithmeticCalculatorOperationApi.Domain.Models.DTO;
 using ArithmeticCalculatorOperationApi.Domain.Models.Request;
 using ArithmeticCalculatorOperationApi.Domain.Models.Response;
 using ArithmeticCalculatorOperationApi.Domain.Services;
@@ -161,43 +162,35 @@ public class Function
                 error = ApiResponseMessages.OperationNotFound
             });
 
-        var debitResponse = await userService.DebitUserBalanceDirectAsync(addOperationRequest.AccountId, operation!.Cost, token);
-        //if (!debitResponse.IsSuccessStatusCode)
-        //{
-        //    var errorContent = await debitResponse.Content.ReadFromJsonAsync<UserApiResponse<ErrorApiUserResponse>>();
-        //    return BuildResponse(HttpStatusCode.BadRequest, errorContent!.Data);
-        //}
+        var updatedBalance = await userService.DebitUserBalanceDirectAsync(addOperationRequest.AccountId, operation!.Cost, token);
 
-        //var (result, operationValues) = await operationService.CalculateOperationResult(operation.Description, addOperationRequest.Value1, addOperationRequest.Value2);
+        var (result, operationValues) = await operationService.CalculateOperationResult(operation.Description, addOperationRequest.Value1, addOperationRequest.Value2);
 
-        //var operationDto = new OperationRecordDTO
-        //{
-        //    UserId = userId,
-        //    OperationTypeId = addOperationRequest.OperationTypeId,
-        //    Cost = operation.Cost,
-        //UserBalance = await userService.GetUserBalanceAsync(addOperationRequest.AccountId, token),
-        //    UserBalance = debitResponse,
-        //    OperationValues = operationValues,
-        //    OperationResult = result
-        //};
+        var operationDto = new OperationRecordDTO
+        {
+            UserId = userId,
+            OperationTypeId = addOperationRequest.OperationTypeId,
+            Cost = operation.Cost,
+            UserBalance = updatedBalance,
+            OperationValues = operationValues,
+            OperationResult = result
+        };
 
-        //await operationService.SaveOperationRecordAsync(operationDto);
+        await operationService.SaveOperationRecordAsync(operationDto);
 
-        //return BuildResponse(HttpStatusCode.OK, new OperationResponse
-        //{
-        //    Message = ApiResponseMessages.OperationAdded,
-        //    OperationRecord = new OperationRecordResponse
-        //    {
-        //        OperationTypeId = addOperationRequest.OperationTypeId,
-        //        Cost = operationDto.Cost,
-        //        OperationValues = operationDto.OperationValues,
-        //        OperationResult = operationDto.OperationResult,
-        //        UserBalance = operationDto.UserBalance,
-        //        UserId = userId
-        //    }
-        //});
-
-        return BuildResponse(HttpStatusCode.OK, new OperationResponse());
+        return BuildResponse(HttpStatusCode.OK, new OperationResponse
+        {
+            Message = ApiResponseMessages.OperationAdded,
+            OperationRecord = new OperationRecordResponse
+            {
+                OperationTypeId = addOperationRequest.OperationTypeId,
+                Cost = operationDto.Cost,
+                OperationValues = operationDto.OperationValues,
+                OperationResult = operationDto.OperationResult,
+                UserBalance = operationDto.UserBalance,
+                UserId = userId
+            }
+        });
     }
 
     private (Guid, string) ValidateTokenAndReturnOrThrow(APIGatewayProxyRequest request)
