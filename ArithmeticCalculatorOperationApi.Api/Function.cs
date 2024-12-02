@@ -35,7 +35,6 @@ public class Function
 
     private void ConfigureServices(IServiceCollection services)
     {
-        // Serviços customizados
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IOperationTypeService, OperationTypeService>();
         services.AddScoped<IOperationService, OperationService>();
@@ -47,7 +46,6 @@ public class Function
 
         services.AddScoped(sp => new JwtTokenValidator(Environment.GetEnvironmentVariable("jwtSecretKey")!));
 
-        // Registro do IAmazonLambda
         services.AddAWSService<IAmazonLambda>();
     }
 
@@ -66,22 +64,26 @@ public class Function
         }
         catch (HttpResponseException ex)
         {
+            Console.WriteLine(ex.Message);
             context.Logger.LogError($"HttpResponseException: {ex.Message}");
             return BuildResponse(ex.StatusCode, new { error = ex.ResponseBody ?? ApiResponseMessages.GenericError });
         }
         catch (SecurityTokenExpiredException ex)
         {
+            Console.WriteLine(ex.Message);
             context.Logger.LogError($"SecurityTokenExpiredException: {ex.Message}");
             return BuildResponse(HttpStatusCode.Unauthorized, new { error = ApiResponseMessages.TokenExpired });
         } 
         catch (SecurityTokenMalformedException ex)
         {
+            Console.WriteLine(ex.Message);
             context.Logger.LogError($"SecurityTokenMalformedException: {ex.Message}");
             return BuildResponse(HttpStatusCode.BadRequest, new { error = ApiResponseMessages.InvalidToken });
         }
         catch (Exception ex)
         {
             context.Logger.LogError($"Unhandled exception: {ex.Message}");
+            Console.WriteLine(ex.Message);
             //return BuildResponse(HttpStatusCode.InternalServerError, new { error = ApiResponseMessages.InternalServerError });
             return BuildResponse(HttpStatusCode.InternalServerError, new { error = ex.Message });
         }
