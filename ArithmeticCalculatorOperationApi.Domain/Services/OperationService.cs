@@ -63,13 +63,15 @@ public class OperationService : IOperationService
 
         var operationDTOs = operations.Select(op => new OperationRecordDTO
         {
+            Id = op.Id,
             UserId = op.UserId,
             OperationTypeId = op.OperationTypeId,
             OperationTypeDescription = op.OperationTypeDescription,
             Cost = op.Cost,
             UserBalance = op.UserBalance,
             OperationValues = op.OperationValues,
-            OperationResult = op.OperationResult
+            OperationResult = op.OperationResult,
+            CreatedAt = op.CreatedAt,
         }).ToList();
 
         var totalRecordsString = totalRecords.ToString();
