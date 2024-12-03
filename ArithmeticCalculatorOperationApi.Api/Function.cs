@@ -59,6 +59,7 @@ public class Function
 
             return request.HttpMethod switch
             {
+                "GET" when request.Path == "/v1/operations" => await GetOperationsType(request),
                 "POST" when request.Path == "/v1/operations" => await AddOperation(request),
                 _ => BuildResponse(HttpStatusCode.NotFound, new { error = ApiResponseMessages.EndpointNotFound }),
             };
@@ -81,8 +82,7 @@ public class Function
         catch (Exception ex)
         {
             context.Logger.LogError($"Exception: {ex.Message}");
-            //return BuildResponse(HttpStatusCode.InternalServerError, new { error = ApiResponseMessages.InternalServerError });
-            return BuildResponse(HttpStatusCode.InternalServerError, new { error = ex.Message });
+            return BuildResponse(HttpStatusCode.InternalServerError, new { error = ApiResponseMessages.InternalServerError });
         }
     }
 
@@ -105,6 +105,27 @@ public class Function
         }
 
         return parsedRequest!;
+    }
+
+    private async Task<APIGatewayProxyResponse> GetOperationsType(APIGatewayProxyRequest request)
+    {
+        var (userId, token) = ValidateTokenAndReturnOrThrow(request);
+
+        var operationTypeService = _serviceProvider.GetRequiredService<IOperationTypeService>();
+
+        var operationTypes = await operationTypeService.GetAllAsync();
+
+        if (operationTypes == null || !operationTypes.Any())
+            return BuildResponse(HttpStatusCode.NotFound, new { Message = ApiResponseMessages.NoOperationsFound });
+
+        var operationResponses = operationTypes.Select(op => new OperationTypeResponse
+        {
+            Id = op.Id,
+            Cost = op.Cost,
+            Description = op.Description,
+        }).ToList();
+
+        return BuildResponse(HttpStatusCode.OK, operationResponses);
     }
 
     private async Task<APIGatewayProxyResponse> AddOperation(APIGatewayProxyRequest request)
