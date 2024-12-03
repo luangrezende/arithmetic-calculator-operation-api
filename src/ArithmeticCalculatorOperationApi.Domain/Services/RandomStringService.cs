@@ -13,7 +13,7 @@ namespace ArithmeticCalculatorOperationApi.Domain.Services
 
         public async Task<string> GenerateRandomStringAsync()
         {
-            var response = await _httpClient.GetAsync(Environment.GetEnvironmentVariable("RandomStringEndpoint"));
+            var response = await _httpClient.GetAsync(Environment.GetEnvironmentVariable("RANDOM_STRING_ENDPOINT"));
 
             response.EnsureSuccessStatusCode();
 

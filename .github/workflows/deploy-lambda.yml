@@ -25,11 +25,11 @@ jobs:
         run: echo "${HOME}/.dotnet/tools" >> $GITHUB_PATH
 
       - name: Install Dependencies
-        working-directory: ArithmeticCalculatorOperationApi.Api
+        working-directory: src/ArithmeticCalculatorOperationApi.Api
         run: dotnet restore
 
       - name: Build and Package Lambda
-        working-directory: ArithmeticCalculatorOperationApi.Api
+        working-directory: src/ArithmeticCalculatorOperationApi.Api
         run: dotnet lambda package --configuration Release --output-package ../output/deployment.zip
 
       - name: Configure AWS CLI

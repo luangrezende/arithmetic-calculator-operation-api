@@ -45,7 +45,7 @@ public class Function
         services.AddScoped<IOperationRepository, OperationRepository>();
         services.AddScoped<IOperationTypeRepository, OperationTypeRepository>();
 
-        services.AddScoped(sp => new JwtTokenValidator(Environment.GetEnvironmentVariable("jwtSecretKey")!));
+        services.AddScoped(sp => new JwtTokenValidator(Environment.GetEnvironmentVariable("JWT_SECRET_KEY")!));
 
         services.AddAWSService<IAmazonLambda>();
     }
