@@ -20,10 +20,10 @@ public class OperationService : IOperationService
     {
         var normalizedOperationType = operationType?.Replace(" ", "").ToLower();
 
-        if (normalizedOperationType == "random string")
+        if (normalizedOperationType == "randomstring")
         {
             var randomString = await _randomStringService.GenerateRandomStringAsync();
-            return (randomString, OperationMessages.RandomStringDescription);
+            return (randomString, OperationsMessages.RandomStringDescription);
         }
 
         return await Task.Run(() =>
@@ -35,11 +35,11 @@ public class OperationService : IOperationService
                 "multiplication" => $"{value1} * {value2 ?? 1}",
                 "division" => value2.HasValue && value2.Value != 0
                     ? $"{value1} / {value2.Value}"
-                    : throw new InvalidOperationException(OperationMessages.DivisionByZeroError),
+                    : throw new InvalidOperationException(OperationsMessages.DivisionByZeroError),
                 "squareroot" => value1 >= 0
                     ? $"√{value1}"
-                    : throw new InvalidOperationException(OperationMessages.NegativeSquareRootError),
-                _ => throw new InvalidOperationException(OperationMessages.UnknownOperationTypeError)
+                    : throw new InvalidOperationException(OperationsMessages.NegativeSquareRootError),
+                _ => throw new InvalidOperationException(OperationsMessages.UnknownOperationTypeError)
             };
 
             var result = normalizedOperationType switch
@@ -49,11 +49,31 @@ public class OperationService : IOperationService
                 "multiplication" => (value1 * (value2 ?? 1)).ToString(),
                 "division" => (value1 / value2!.Value).ToString(),
                 "squareroot" => Math.Sqrt((double)value1).ToString(),
-                _ => throw new InvalidOperationException(OperationMessages.UnknownOperationTypeError)
+                _ => throw new InvalidOperationException(OperationsMessages.UnknownOperationTypeError)
             };
 
             return (result, operationValues: operation);
         });
+    }
+
+    public async Task<(string totalRecords, List<OperationRecordDTO> records)> GetPagedOperationsAsync(Guid userId, int page, int pageSize, string query)
+    {
+        var totalRecords = await _operationRepository.GetTotalCountAsync(userId, query);
+        var operations = await _operationRepository.GetPagedOperationsAsync(userId, page, pageSize, query);
+
+        var operationDTOs = operations.Select(op => new OperationRecordDTO
+        {
+            UserId = op.UserId,
+            OperationTypeId = op.OperationTypeId,
+            Cost = op.Cost,
+            UserBalance = op.UserBalance,
+            OperationValues = op.OperationValues,
+            OperationResult = op.OperationResult
+        }).ToList();
+
+        var totalRecordsString = totalRecords.ToString();
+
+        return (totalRecordsString, operationDTOs);
     }
 
     public async Task<bool> SaveOperationRecordAsync(OperationRecordDTO operationRecord)
@@ -81,5 +101,10 @@ public class OperationService : IOperationService
                 UserId = operationRecord.UserId,
             });
         });
+    }
+
+    public async Task<bool> SoftDeleteOperationRecordsAsync(Guid userId, List<Guid> recordIds)
+    {
+        return await _operationRepository.SoftDeleteOperationRecordsAsync(userId, recordIds);
     }
 }

@@ -59,8 +59,11 @@ public class Function
 
             return request.HttpMethod switch
             {
-                "GET" when request.Path == "/v1/operations" => await GetOperationsType(request),
-                "POST" when request.Path == "/v1/operations" => await AddOperation(request),
+                "GET" when request.Path == "/v1/operations/types" => await GetOperationsType(request),
+                "GET" when request.Path == "/v1/operations/records" => await GetPagedOperations(request),
+                "POST" when request.Path == "/v1/operations/records" => await AddOperation(request),
+                "DELETE" when request.Path == "/v1/operations/records" => await SoftDeleteOperationRecords(request),
+
                 _ => BuildResponse(HttpStatusCode.NotFound, new { error = ApiResponseMessages.EndpointNotFound }),
             };
         }
@@ -73,7 +76,7 @@ public class Function
         {
             context.Logger.LogError($"SecurityTokenExpiredException: {ex.Message}");
             return BuildResponse(HttpStatusCode.Unauthorized, new { error = ApiResponseMessages.TokenExpired });
-        } 
+        }
         catch (SecurityTokenMalformedException ex)
         {
             context.Logger.LogError($"SecurityTokenMalformedException: {ex.Message}");
@@ -105,6 +108,45 @@ public class Function
         }
 
         return parsedRequest!;
+    }
+
+    public async Task<APIGatewayProxyResponse> SoftDeleteOperationRecords(APIGatewayProxyRequest request)
+    {
+        var userId = ValidateTokenAndGetUserId(request);
+
+        var operationService = _serviceProvider.GetRequiredService<IOperationService>();
+
+        if (string.IsNullOrWhiteSpace(request.Body))
+            return BuildResponse(HttpStatusCode.BadRequest, new { error = OperationsMessages.RequestBodyRequired });
+
+        var requestBody = ParseRequestOrThrow<SoftDeleteOperationRecordRequest>(request.Body);
+        if (requestBody?.Ids == null || !requestBody.Ids.Any())
+            return BuildResponse(HttpStatusCode.BadRequest, new { error = OperationsMessages.ListOfIdsRequired });
+
+        var success = await operationService.SoftDeleteOperationRecordsAsync(userId, requestBody.Ids);
+
+        if (!success)
+            return BuildResponse(HttpStatusCode.NotFound, new { error = OperationsMessages.RecordsNotFoundOrDeleted });
+
+        return BuildResponse(HttpStatusCode.NoContent, null!);
+    }
+
+    private async Task<APIGatewayProxyResponse> GetPagedOperations(APIGatewayProxyRequest request)
+    {
+        var userId = ValidateTokenAndGetUserId(request);
+        var operationService = _serviceProvider.GetRequiredService<IOperationService>();
+
+        int page = int.TryParse(request.QueryStringParameters?["page"], out var p) ? p : 0;
+        int pageSize = int.TryParse(request.QueryStringParameters?["pageSize"], out var ps) ? ps : 10;
+        string query = request.QueryStringParameters?["query"] ?? string.Empty;
+
+        var (totalRecords, records) = await operationService.GetPagedOperationsAsync(userId, page, pageSize, query);
+
+        return BuildResponse(HttpStatusCode.OK, new
+        {
+            records,
+            total = totalRecords
+        });
     }
 
     private async Task<APIGatewayProxyResponse> GetOperationsType(APIGatewayProxyRequest request)
@@ -187,6 +229,21 @@ public class Function
             throw new HttpResponseException(HttpStatusCode.Unauthorized, ApiResponseMessages.InvalidToken);
 
         return (userId, token);
+    }
+
+    private Guid ValidateTokenAndGetUserId(APIGatewayProxyRequest request)
+    {
+        var jwtTokenValidator = _serviceProvider.GetRequiredService<JwtTokenValidator>();
+
+        if (!request.Headers.TryGetValue("Authorization", out var authorization) || string.IsNullOrWhiteSpace(authorization))
+            throw new HttpResponseException(HttpStatusCode.Unauthorized, ApiResponseMessages.InvalidToken);
+
+        var token = authorization.Replace("Bearer ", "", StringComparison.OrdinalIgnoreCase);
+
+        if (!jwtTokenValidator.ValidateToken(token, out var userId))
+            throw new HttpResponseException(HttpStatusCode.Unauthorized, ApiResponseMessages.InvalidToken);
+
+        return userId;
     }
 
     private APIGatewayProxyResponse BuildPreflightResponse() =>

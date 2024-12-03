@@ -13,5 +13,7 @@
         public string OperationValues { get; set; }
 
         public string OperationResult { get; set; }
+
+        public DateTime CreatedAt { get; set; }
     }
 }
