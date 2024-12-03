@@ -142,10 +142,19 @@ public class Function
 
         var (totalRecords, records) = await operationService.GetPagedOperationsAsync(userId, page, pageSize, query);
 
-        return BuildResponse(HttpStatusCode.OK, new
+        var mappedRecords = records.Select(record => new OperationRecordResponse
         {
-            records,
-            total = totalRecords
+            OperationTypeDescription = record.OperationTypeDescription,
+            Cost = record.Cost,
+            UserBalance = record.UserBalance,
+            OperationValues = record.OperationValues,
+            OperationResult = record.OperationResult
+        }).ToList();
+
+        return BuildResponse(HttpStatusCode.OK, new OperationRecordPagedResponse
+        {
+            Records = mappedRecords,
+            Total = totalRecords
         });
     }
 
@@ -208,12 +217,10 @@ public class Function
             Message = ApiResponseMessages.OperationAdded,
             OperationRecord = new OperationRecordResponse
             {
-                OperationTypeId = addOperationRequest.OperationTypeId,
                 Cost = operationDto.Cost,
                 OperationValues = operationDto.OperationValues,
                 OperationResult = operationDto.OperationResult,
                 UserBalance = operationDto.UserBalance,
-                UserId = userId
             }
         });
     }

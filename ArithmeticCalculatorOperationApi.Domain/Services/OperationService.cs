@@ -65,6 +65,7 @@ public class OperationService : IOperationService
         {
             UserId = op.UserId,
             OperationTypeId = op.OperationTypeId,
+            OperationTypeDescription = op.OperationTypeDescription,
             Cost = op.Cost,
             UserBalance = op.UserBalance,
             OperationValues = op.OperationValues,
