@@ -6,6 +6,8 @@
 
         public Guid OperationTypeId { get; set; }
 
+        public string OperationTypeDescription { get; set; }
+
         public decimal Cost { get; set; }
 
         public decimal UserBalance { get; set; }

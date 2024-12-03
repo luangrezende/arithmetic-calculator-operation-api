@@ -46,7 +46,8 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
                     r.user_balance, 
                     r.operation_result, 
                     r.operation_values, 
-                    r.created_at
+                    r.created_at,
+                    ot.description AS operation_type_description
                 FROM record r
                 INNER JOIN operation_type ot ON r.operation_type_id = ot.id
                 WHERE 
@@ -86,6 +87,7 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
                     OperationResult = reader.GetString("operation_result"),
                     OperationValues = reader.GetString("operation_values"),
                     CreatedAt = reader.GetDateTime("created_at"),
+                    OperationTypeDescription = reader.GetString("operation_type_description"),
                 });
             }
 

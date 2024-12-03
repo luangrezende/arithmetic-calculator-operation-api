@@ -4,11 +4,8 @@ namespace ArithmeticCalculatorOperationApi.Domain.Models.Response
 {
     public class OperationRecordResponse
     {
-        [JsonPropertyName("userId")]
-        public Guid UserId { get; set; }
-
-        [JsonPropertyName("operationTypeId")]
-        public Guid OperationTypeId { get; set; }
+        [JsonPropertyName("operationTypeDescription")]
+        public string OperationTypeDescription { get; set; }
 
         [JsonPropertyName("cost")]
         public decimal Cost { get; set; }
