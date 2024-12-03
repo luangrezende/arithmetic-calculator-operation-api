@@ -51,6 +51,7 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
                 FROM record r
                 INNER JOIN operation_type ot ON r.operation_type_id = ot.id
                 WHERE 
+                    r.deleted_at IS NULL AND
                     r.user_id = @UserId AND (
                         @Query = '' OR (
                             LOWER(ot.description) LIKE CONCAT('%', LOWER(@Query), '%') OR
@@ -62,6 +63,7 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
                     )
                 ORDER BY r.created_at DESC
                 LIMIT @PageSize OFFSET @Offset";
+
 
             using var connection = new MySqlConnection(_connectionString);
             await connection.OpenAsync();
@@ -98,19 +100,20 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
         {
             const string sql = @"
                 SELECT COUNT(*)
-                    FROM record r
-                    INNER JOIN operation_type ot ON r.operation_type_id = ot.id
-                    WHERE 
-                        r.user_id = @UserId AND (
-                            @Query = '' OR (
-                                LOWER(ot.description) LIKE CONCAT('%', LOWER(@Query), '%') OR
-                                r.cost LIKE CONCAT('%', @Query, '%') OR
-                                LOWER(r.operation_result) LIKE CONCAT('%', LOWER(@Query), '%') OR
-                                LOWER(r.operation_values) LIKE CONCAT('%', LOWER(@Query), '%') OR
-                                DATE_FORMAT(r.created_at, '%Y-%m-%d %H:%i:%s') LIKE CONCAT('%', @Query, '%')
-                            )
-                        );
-                    ";
+                FROM record r
+                INNER JOIN operation_type ot ON r.operation_type_id = ot.id
+                WHERE 
+                    r.deleted_at IS NULL AND -- Adicionado para filtrar registros não excluídos
+                    r.user_id = @UserId AND (
+                        @Query = '' OR (
+                            LOWER(ot.description) LIKE CONCAT('%', LOWER(@Query), '%') OR
+                            r.cost LIKE CONCAT('%', @Query, '%') OR
+                            LOWER(r.operation_result) LIKE CONCAT('%', LOWER(@Query), '%') OR
+                            LOWER(r.operation_values) LIKE CONCAT('%', LOWER(@Query), '%') OR
+                            DATE_FORMAT(r.created_at, '%Y-%m-%d %H:%i:%s') LIKE CONCAT('%', @Query, '%')
+                        )
+                    );
+            ";
 
             using var connection = new MySqlConnection(_connectionString);
             await connection.OpenAsync();
