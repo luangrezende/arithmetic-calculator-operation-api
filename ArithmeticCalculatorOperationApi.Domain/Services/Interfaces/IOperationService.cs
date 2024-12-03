@@ -6,6 +6,10 @@ namespace ArithmeticCalculatorOperationApi.Domain.Services.Interfaces
     {
         Task<(string result, string operationValues)> CalculateOperationResult(string operationType, decimal value1, decimal? value2 = null);
 
+        Task<(string totalRecords, List<OperationRecordDTO> records)> GetPagedOperationsAsync(Guid userId, int page, int pageSize, string query);
+
         Task<bool> SaveOperationRecordAsync(OperationRecordDTO operationRecord);
+
+        Task<bool> SoftDeleteOperationRecordsAsync(Guid userId, List<Guid> recordIds);
     }
 }
