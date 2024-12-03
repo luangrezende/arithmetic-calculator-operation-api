@@ -56,7 +56,7 @@ public class OperationService : IOperationService
         });
     }
 
-    public async Task<(string totalRecords, List<OperationRecordDTO> records)> GetPagedOperationsAsync(Guid userId, int page, int pageSize, string query)
+    public async Task<(int totalRecords, List<OperationRecordDTO> records)> GetPagedOperationsAsync(Guid userId, int page, int pageSize, string query)
     {
         var totalRecords = await _operationRepository.GetTotalCountAsync(userId, query);
         var operations = await _operationRepository.GetPagedOperationsAsync(userId, page, pageSize, query);
@@ -74,9 +74,7 @@ public class OperationService : IOperationService
             CreatedAt = op.CreatedAt,
         }).ToList();
 
-        var totalRecordsString = totalRecords.ToString();
-
-        return (totalRecordsString, operationDTOs);
+        return (totalRecords, operationDTOs);
     }
 
     public async Task<bool> SaveOperationRecordAsync(OperationRecordDTO operationRecord)

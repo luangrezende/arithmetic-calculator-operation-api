@@ -8,6 +8,6 @@ namespace ArithmeticCalculatorOperationApi.Domain.Models.Response
         public List<OperationRecordResponse>? Records { get; set; }
 
         [JsonPropertyName("total")]
-        public string Total { get; set; }
+        public int Total { get; set; }
     }
 }
