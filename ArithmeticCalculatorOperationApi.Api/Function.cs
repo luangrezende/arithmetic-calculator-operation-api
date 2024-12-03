@@ -144,11 +144,13 @@ public class Function
 
         var mappedRecords = records.Select(record => new OperationRecordResponse
         {
+            Id = record.Id,
             OperationTypeDescription = record.OperationTypeDescription,
             Cost = record.Cost,
             UserBalance = record.UserBalance,
             OperationValues = record.OperationValues,
-            OperationResult = record.OperationResult
+            OperationResult = record.OperationResult,
+            CreatedAt = record.CreatedAt
         }).ToList();
 
         return BuildResponse(HttpStatusCode.OK, new OperationRecordPagedResponse
