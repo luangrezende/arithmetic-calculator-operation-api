@@ -10,7 +10,7 @@ public class UserService : IUserService
     public UserService(LambdaInvoker lambdaInvoker)
     {
         _lambdaInvoker = lambdaInvoker;
-        FunctionName = Environment.GetEnvironmentVariable("ArithmeticCalculatorUserApiFunctionArn")!;
+        FunctionName = Environment.GetEnvironmentVariable("ARITHMETIC_CALCULATOR_USER_API_FUNCTION_ARN")!;
     }
 
     public async Task<decimal> DebitUserBalanceDirectAsync(Guid accountId, decimal operationCost, string token)
@@ -24,7 +24,7 @@ public class UserService : IUserService
         var payload = new
         {
             httpMethod = "PUT",
-            path = Environment.GetEnvironmentVariable("UserDebitApiEndpoint"),
+            path = Environment.GetEnvironmentVariable("USER_DEBIT_API_ENDPOINT"),
             body = JsonSerializer.Serialize(bodyContent),
             headers = new
             {
@@ -45,7 +45,7 @@ public class UserService : IUserService
         var profilePayload = new
         {
             httpMethod = "GET",
-            path = Environment.GetEnvironmentVariable("UserProfileApiEndpoint"),
+            path = Environment.GetEnvironmentVariable("USER_PROFILE_API_ENDPOINT"),
             headers = new { Authorization = $"Bearer {token}" }
         };
 
