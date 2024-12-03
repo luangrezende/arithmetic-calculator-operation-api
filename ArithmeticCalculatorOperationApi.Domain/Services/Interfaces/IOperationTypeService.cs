@@ -5,5 +5,7 @@ namespace ArithmeticCalculatorOperationApi.Domain.Services.Interfaces
     public interface IOperationTypeService
     {
         Task<OperationTypeDTO?> GetByIdAsync(Guid id);
+
+        Task<List<OperationTypeDTO>?> GetAllAsync();
     }
 }

@@ -24,5 +24,21 @@ namespace ArithmeticCalculatorOperationApi.Domain.Services
                 Description = result.Description,
             };
         }
+
+        public async Task<List<OperationTypeDTO>?> GetAllAsync()
+        {
+            var result = await _operationTypeRepository.GetAllAsync();
+
+            if (result == null || !result.Any())
+                return null;
+
+            return result.Select(r => new OperationTypeDTO
+            {
+                Id = r.Id,
+                Cost = r.Cost,
+                Description = r.Description,
+            }).ToList();
+        }
+
     }
 }

@@ -15,5 +15,6 @@
         public const string AddBalanceSuccess = "Balance added successfully.";
         public const string InvalidAmount = "The amount is invalid.";
         public const string ExceededMaximumAmount = "The amount exceeds the maximum allowed.";
+        public const string NoOperationsFound = "No operations were found.";
     }
 }
