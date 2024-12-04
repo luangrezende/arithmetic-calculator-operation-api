@@ -67,26 +67,9 @@ public class Function
                 _ => BuildResponse(HttpStatusCode.NotFound, new { error = ApiResponseMessages.EndpointNotFound }),
             };
         }
-        catch (HttpResponseException ex)
-        {
-            context.Logger.LogError($"HttpResponseException: {ex.Message}");
-            return BuildResponse(ex.StatusCode, new { error = ex.ResponseBody ?? ApiResponseMessages.GenericError });
-        }
-        catch (SecurityTokenExpiredException ex)
-        {
-            context.Logger.LogError($"SecurityTokenExpiredException: {ex.Message}");
-            return BuildResponse(HttpStatusCode.Unauthorized, new { error = ApiResponseMessages.TokenExpired });
-        }
-        catch (SecurityTokenMalformedException ex)
-        {
-            context.Logger.LogError($"SecurityTokenMalformedException: {ex.Message}");
-            return BuildResponse(HttpStatusCode.BadRequest, new { error = ApiResponseMessages.InvalidToken });
-        }
         catch (Exception ex)
         {
-            context.Logger.LogError($"Exception: {ex.Message}");
-            return BuildResponse(HttpStatusCode.InternalServerError, new { error = ex.Message });
-            //return BuildResponse(HttpStatusCode.InternalServerError, new { error = ApiResponseMessages.InternalServerError });
+            return HandleException(ex, context);
         }
     }
 
@@ -215,17 +198,19 @@ public class Function
             OperationResult = result
         };
 
-        await operationService.SaveOperationRecordAsync(operationDto);
+        var operationSaved = await operationService.SaveOperationRecordAsync(operationDto);
 
         return BuildResponse(HttpStatusCode.Created, new OperationResponse
         {
             Message = ApiResponseMessages.OperationAdded,
             OperationRecord = new OperationRecordResponse
             {
+                Id = operationSaved.Id,
                 Cost = operationDto.Cost,
                 OperationValues = operationDto.OperationValues,
                 OperationResult = operationDto.OperationResult,
                 UserBalance = operationDto.UserBalance,
+                CreatedAt = operationSaved.CreatedAt,
             }
         });
     }
@@ -256,6 +241,19 @@ public class Function
             throw new HttpResponseException(HttpStatusCode.Unauthorized, ApiResponseMessages.InvalidToken);
 
         return userId;
+    }
+
+    private APIGatewayProxyResponse HandleException(Exception ex, ILambdaContext context)
+    {
+        context.Logger.LogError($"Exception: {ex.Message}");
+
+        return ex switch
+        {
+            HttpResponseException httpEx => BuildResponse(httpEx.StatusCode, new { error = httpEx.ResponseBody }),
+            SecurityTokenExpiredException => BuildResponse(HttpStatusCode.Unauthorized, new { error = ApiResponseMessages.TokenExpired }),
+            SecurityTokenMalformedException => BuildResponse(HttpStatusCode.BadRequest, new { error = ApiResponseMessages.InvalidToken }),
+            _ => BuildResponse(HttpStatusCode.InternalServerError, new { error = ex.Message }),
+        };
     }
 
     private APIGatewayProxyResponse BuildPreflightResponse() =>
