@@ -28,9 +28,12 @@ jobs:
         working-directory: src/ArithmeticCalculatorOperationApi.Api
         run: dotnet restore
 
+      - name: Create output directory
+        run: mkdir -p src/ArithmeticCalculatorOperationApi.Api/output
+
       - name: Build and Package Lambda
         working-directory: src/ArithmeticCalculatorOperationApi.Api
-        run: dotnet lambda package --configuration Release --output-package ../output/deployment.zip
+        run: dotnet lambda package --configuration Release --output-package /home/runner/work/${{ github.repository }}/src/ArithmeticCalculatorOperationApi.Api/output/deployment.zip
 
       - name: Configure AWS CLI
         uses: aws-actions/configure-aws-credentials@v2
@@ -45,7 +48,7 @@ jobs:
             echo "Updating Lambda function"
             aws lambda update-function-code \
               --function-name ArithmeticCalculatorOperationApi \
-              --zip-file fileb://./output/deployment.zip
+              --zip-file fileb:///home/runner/work/${{ github.repository }}/src/ArithmeticCalculatorOperationApi.Api/output/deployment.zip
           else
             echo "Creating Lambda function"
             aws lambda create-function \
@@ -53,5 +56,5 @@ jobs:
               --runtime dotnet8 \
               --role arn:aws:iam::565393042425:role/ArithmeticCalculatorUserLambdaRole\
               --handler ArithmeticCalculatorOperationApi::ArithmeticCalculatorOperationApi.Function::FunctionHandler \
-              --zip-file fileb://./output/deployment.zip
+              --zip-file fileb:///home/runner/work/${{ github.repository }}/src/ArithmeticCalculatorOperationApi.Api/output/deployment.zip
           fi
