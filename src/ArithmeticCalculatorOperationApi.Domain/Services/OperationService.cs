@@ -92,6 +92,18 @@ public class OperationService : IOperationService
 
         return await retryPolicy.ExecuteAsync(async () =>
         {
+            var operationResult = await _operationRepository.SaveRecordAsync(new OperationRecordEntity
+            {
+                Id = Guid.NewGuid(),
+                Cost = operationRecord.Cost,
+                OperationResult = operationRecord.OperationResult,
+                OperationTypeId = operationRecord.OperationTypeId,
+                OperationValues = operationRecord.OperationValues,
+                UserBalance = operationRecord.UserBalance,
+                UserId = operationRecord.UserId,
+                CreatedAt = operationRecord.CreatedAt,
+            });
+
             return await _operationRepository.SaveRecordAsync(new OperationRecordEntity
             {
                 Cost = operationRecord.Cost,

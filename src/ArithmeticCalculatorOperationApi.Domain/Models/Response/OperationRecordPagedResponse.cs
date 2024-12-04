@@ -9,5 +9,11 @@ namespace ArithmeticCalculatorOperationApi.Domain.Models.Response
 
         [JsonPropertyName("total")]
         public int Total { get; set; }
+
+        [JsonPropertyName("page")]
+        public int Page { get; set; }
+
+        [JsonPropertyName("pageSize")]
+        public int PageSize { get; set; }
     }
 }

@@ -156,7 +156,9 @@ public class Function
         return BuildResponse(HttpStatusCode.OK, new OperationRecordPagedResponse
         {
             Records = mappedRecords,
-            Total = totalRecords
+            Total = totalRecords,
+            Page = page,
+            PageSize = pageSize,
         });
     }
 
@@ -214,7 +216,7 @@ public class Function
 
         await operationService.SaveOperationRecordAsync(operationDto);
 
-        return BuildResponse(HttpStatusCode.OK, new OperationResponse
+        return BuildResponse(HttpStatusCode.Created, new OperationResponse
         {
             Message = ApiResponseMessages.OperationAdded,
             OperationRecord = new OperationRecordResponse
