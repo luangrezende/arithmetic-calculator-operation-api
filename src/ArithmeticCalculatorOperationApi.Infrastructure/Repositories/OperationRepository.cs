@@ -58,7 +58,7 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
                     r.operation_values, 
                     r.created_at,
                     ot.description AS operation_type_description
-                FROM record r
+                FROM operation_record r
                 INNER JOIN operation_type ot ON r.operation_type_id = ot.id
                 WHERE 
                     r.deleted_at IS NULL AND
@@ -93,7 +93,7 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
                 index++;
             }
 
-            string sql = $"UPDATE record SET deleted_at = CURRENT_TIMESTAMP WHERE user_id = @UserId AND id IN ({string.Join(", ", recordPlaceholders)}) AND deleted_at IS NULL";
+            string sql = $"UPDATE operation_record SET deleted_at = CURRENT_TIMESTAMP WHERE user_id = @UserId AND id IN ({string.Join(", ", recordPlaceholders)}) AND deleted_at IS NULL";
 
             using var connection = new MySqlConnection(_connectionString);
             await connection.OpenAsync();
@@ -145,7 +145,7 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
         public async Task<bool> SaveRecordAsync(OperationRecordEntity operationRecord)
         {
             const string query = @"
-                INSERT INTO record (
+                INSERT INTO operation_record (
                     id, 
                     operation_type_id, 
                     user_id, 

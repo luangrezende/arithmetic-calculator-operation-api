@@ -104,15 +104,7 @@ public class OperationService : IOperationService
                 CreatedAt = operationRecord.CreatedAt,
             });
 
-            return await _operationRepository.SaveRecordAsync(new OperationRecordEntity
-            {
-                Cost = operationRecord.Cost,
-                OperationResult = operationRecord.OperationResult,
-                OperationTypeId = operationRecord.OperationTypeId,
-                OperationValues = operationRecord.OperationValues,
-                UserBalance = operationRecord.UserBalance,
-                UserId = operationRecord.UserId,
-            });
+            return operationResult;
         });
     }
 
