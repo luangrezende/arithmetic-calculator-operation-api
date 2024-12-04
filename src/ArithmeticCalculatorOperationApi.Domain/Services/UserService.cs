@@ -35,7 +35,7 @@ public class UserService : IUserService
         var debitResponse = await _lambdaInvoker.InvokeLambdaAsync<OuterResponse>(FunctionName, payload);
 
         if (debitResponse.StatusCode != 200 || debitResponse.Body == null)
-            throw new InvalidOperationException($"Failed to process the debit response from the Lambda function.");
+            throw new InvalidOperationException($"Failed to process the debit response from the User Lambda function.");
 
         return await GetUpdatedBalanceAsync(accountId, token);
     }
@@ -52,7 +52,7 @@ public class UserService : IUserService
         var profileResponse = await _lambdaInvoker.InvokeLambdaAsync<OuterResponse>(FunctionName, profilePayload);
 
         if (profileResponse.StatusCode != 200 || profileResponse.Body == null)
-            throw new InvalidOperationException("Failed to process the profile response from the Lambda function.");
+            throw new InvalidOperationException("Failed to process the profile response from the User Lambda function.");
 
         var profileInnerResponse = JsonSerializer.Deserialize<UserApiResponse<UserProfileResponse>>(profileResponse.Body);
 
