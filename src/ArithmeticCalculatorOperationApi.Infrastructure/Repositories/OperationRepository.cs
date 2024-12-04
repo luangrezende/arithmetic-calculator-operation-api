@@ -48,32 +48,32 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
         private string BuildQueryWithFilters(string query)
         {
             return @"
-            SELECT 
-                r.id, 
-                r.operation_type_id, 
-                r.user_id, 
-                r.cost, 
-                r.user_balance, 
-                r.operation_result, 
-                r.operation_values, 
-                r.created_at,
-                ot.description AS operation_type_description
-            FROM record r
-            INNER JOIN operation_type ot ON r.operation_type_id = ot.id
-            WHERE 
-                r.deleted_at IS NULL AND
-                r.user_id = @UserId AND (
-                    @Query = '' OR (
-                        LOWER(ot.description) LIKE CONCAT('%', LOWER(@Query), '%') OR
-                        r.cost LIKE CONCAT('%', @Query, '%') OR
-                        LOWER(r.operation_result) LIKE CONCAT('%', LOWER(@Query), '%') OR
-                        LOWER(r.operation_values) LIKE CONCAT('%', LOWER(@Query), '%') OR
-                        (
-                            REPLACE(DATE_FORMAT(r.created_at, '%Y/%m/%d'), '/', '') LIKE REPLACE(CONCAT('%', @Query, '%'), '/', '')
-                            OR DATE_FORMAT(r.created_at, '%Y-%m-%d %H:%i:%s') LIKE CONCAT('%', @Query, '%')
+                SELECT 
+                    r.id, 
+                    r.operation_type_id, 
+                    r.user_id, 
+                    r.cost, 
+                    r.user_balance, 
+                    r.operation_result, 
+                    r.operation_values, 
+                    r.created_at,
+                    ot.description AS operation_type_description
+                FROM record r
+                INNER JOIN operation_type ot ON r.operation_type_id = ot.id
+                WHERE 
+                    r.deleted_at IS NULL AND
+                    r.user_id = @UserId AND (
+                        @Query = '' OR (
+                            LOWER(ot.description) LIKE CONCAT('%', LOWER(@Query), '%') OR
+                            r.cost LIKE CONCAT('%', @Query, '%') OR
+                            LOWER(r.operation_result) LIKE CONCAT('%', LOWER(@Query), '%') OR
+                            LOWER(r.operation_values) LIKE CONCAT('%', LOWER(@Query), '%') OR
+                            (
+                                REPLACE(DATE_FORMAT(r.created_at, '%Y/%m/%d'), '/', '') LIKE REPLACE(CONCAT('%', @Query, '%'), '/', '')
+                                OR DATE_FORMAT(r.created_at, '%Y-%m-%d %H:%i:%s') LIKE CONCAT('%', @Query, '%')
+                            )
                         )
-                    )
-                )";
+                    )";
         }
 
         public async Task<bool> SoftDeleteOperationRecordsAsync(Guid userId, List<Guid> recordIds)
@@ -81,12 +81,19 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
             if (recordIds == null || recordIds.Count == 0)
                 return false;
 
-            const string sql = "UPDATE record SET deleted_at = CURRENT_TIMESTAMP WHERE user_id = @UserId AND id IN (@RecordIds) AND deleted_at IS NULL";
+            var recordPlaceholders = new List<string>();
             var parameters = new List<MySqlParameter> { new MySqlParameter("@UserId", MySqlDbType.Guid) { Value = userId } };
+
+            int index = 0;
             foreach (var recordId in recordIds)
             {
-                parameters.Add(new MySqlParameter("@RecordId", MySqlDbType.Guid) { Value = recordId });
+                var parameterName = $"@RecordId{index}";
+                recordPlaceholders.Add(parameterName);
+                parameters.Add(new MySqlParameter(parameterName, MySqlDbType.Guid) { Value = recordId });
+                index++;
             }
+
+            string sql = $"UPDATE record SET deleted_at = CURRENT_TIMESTAMP WHERE user_id = @UserId AND id IN ({string.Join(", ", recordPlaceholders)}) AND deleted_at IS NULL";
 
             using var connection = new MySqlConnection(_connectionString);
             await connection.OpenAsync();
@@ -105,11 +112,11 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
 
             var parameters = new[]
             {
-            new MySqlParameter("@UserId", MySqlDbType.Guid) { Value = userId },
-            new MySqlParameter("@Query", MySqlDbType.Text) { Value = query },
-            new MySqlParameter("@PageSize", MySqlDbType.Int32) { Value = pageSize },
-            new MySqlParameter("@Offset", MySqlDbType.Int32) { Value = page * pageSize }
-        };
+                new MySqlParameter("@UserId", MySqlDbType.Guid) { Value = userId },
+                new MySqlParameter("@Query", MySqlDbType.Text) { Value = query },
+                new MySqlParameter("@PageSize", MySqlDbType.Int32) { Value = pageSize },
+                new MySqlParameter("@Offset", MySqlDbType.Int32) { Value = page * pageSize }
+            };
 
             return await ExecuteOperationQueryAsync(sql, parameters);
         }
@@ -121,9 +128,9 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
 
             var parameters = new[]
             {
-            new MySqlParameter("@UserId", MySqlDbType.Guid) { Value = userId },
-            new MySqlParameter("@Query", MySqlDbType.Text) { Value = query }
-        };
+                new MySqlParameter("@UserId", MySqlDbType.Guid) { Value = userId },
+                new MySqlParameter("@Query", MySqlDbType.Text) { Value = query }
+            };
 
             using var connection = new MySqlConnection(_connectionString);
             await connection.OpenAsync();
@@ -137,39 +144,38 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
 
         public async Task<bool> SaveRecordAsync(OperationRecordEntity operationRecord)
         {
-            var operationId = Guid.NewGuid();
             const string query = @"
-            INSERT INTO record (
-                id, 
-                operation_type_id, 
-                user_id, 
-                cost, 
-                user_balance, 
-                operation_result, 
-                operation_values, 
-                created_at
-            ) VALUES (
-                @Id, 
-                @OperationTypeId, 
-                @UserId, 
-                @Cost, 
-                @UserBalance, 
-                @OperationResult, 
-                @OperationValues, 
-                @CreatedAt
-            )";
+                INSERT INTO record (
+                    id, 
+                    operation_type_id, 
+                    user_id, 
+                    cost, 
+                    user_balance, 
+                    operation_result, 
+                    operation_values, 
+                    created_at
+                ) VALUES (
+                    @Id, 
+                    @OperationTypeId, 
+                    @UserId, 
+                    @Cost, 
+                    @UserBalance, 
+                    @OperationResult, 
+                    @OperationValues, 
+                    @CreatedAt
+                )";
 
             var parameters = new[]
             {
-            new MySqlParameter("@Id", MySqlDbType.Guid) { Value = operationId },
-            new MySqlParameter("@OperationTypeId", MySqlDbType.Guid) { Value = operationRecord.OperationTypeId },
-            new MySqlParameter("@UserId", MySqlDbType.Guid) { Value = operationRecord.UserId },
-            new MySqlParameter("@Cost", MySqlDbType.Decimal) { Value = operationRecord.Cost },
-            new MySqlParameter("@UserBalance", MySqlDbType.Decimal) { Value = operationRecord.UserBalance },
-            new MySqlParameter("@OperationResult", MySqlDbType.Text) { Value = operationRecord.OperationResult },
-            new MySqlParameter("@OperationValues", MySqlDbType.Text) { Value = operationRecord.OperationValues },
-            new MySqlParameter("@CreatedAt", MySqlDbType.Timestamp) { Value = operationRecord.CreatedAt }
-        };
+                new MySqlParameter("@Id", MySqlDbType.Guid) { Value = operationRecord.Id },
+                new MySqlParameter("@OperationTypeId", MySqlDbType.Guid) { Value = operationRecord.OperationTypeId },
+                new MySqlParameter("@UserId", MySqlDbType.Guid) { Value = operationRecord.UserId },
+                new MySqlParameter("@Cost", MySqlDbType.Decimal) { Value = operationRecord.Cost },
+                new MySqlParameter("@UserBalance", MySqlDbType.Decimal) { Value = operationRecord.UserBalance },
+                new MySqlParameter("@OperationResult", MySqlDbType.Text) { Value = operationRecord.OperationResult },
+                new MySqlParameter("@OperationValues", MySqlDbType.Text) { Value = operationRecord.OperationValues },
+                new MySqlParameter("@CreatedAt", MySqlDbType.Timestamp) { Value = operationRecord.CreatedAt }
+            };
 
             using var connection = new MySqlConnection(_connectionString);
             await connection.OpenAsync();
