@@ -18,42 +18,38 @@ public class OperationService : IOperationService
 
     public async Task<(string result, string operationValues)> CalculateOperationResult(string operationType, decimal value1, decimal? value2 = null)
     {
-        var normalizedOperationType = operationType?.Replace(" ", "").ToLower();
+        if (string.IsNullOrWhiteSpace(operationType))
+            throw new ArgumentException(OperationsMessages.UnknownOperationTypeError);
 
-        if (normalizedOperationType == "randomstring")
+        var normalizedOperationType = operationType.Replace(" ", "").ToLower();
+
+        return normalizedOperationType switch
         {
-            var randomString = await _randomStringService.GenerateRandomStringAsync();
-            return (randomString, OperationsMessages.RandomStringDescription);
-        }
+            "randomstring" => await GenerateRandomStringResultAsync(),
+            "addition" => CalculateArithmeticOperation(value1, value2 ?? 0, "+", (a, b) => a + b),
+            "subtraction" => CalculateArithmeticOperation(value1, value2 ?? 0, "-", (a, b) => a - b),
+            "multiplication" => CalculateArithmeticOperation(value1, value2 ?? 1, "*", (a, b) => a * b),
+            "division" => value2.HasValue && value2.Value != 0
+                ? CalculateArithmeticOperation(value1, value2.Value, "/", (a, b) => a / b)
+                : throw new InvalidOperationException(OperationsMessages.DivisionByZeroError),
+            "squareroot" => value1 >= 0
+                ? (Math.Sqrt((double)value1).ToString(), $"√{value1}")
+                : throw new InvalidOperationException(OperationsMessages.NegativeSquareRootError),
+            _ => throw new InvalidOperationException(OperationsMessages.UnknownOperationTypeError)
+        };
+    }
 
-        return await Task.Run(() =>
-        {
-            var operation = normalizedOperationType switch
-            {
-                "addition" => $"{value1} + {value2 ?? 0}",
-                "subtraction" => $"{value1} - {value2 ?? 0}",
-                "multiplication" => $"{value1} * {value2 ?? 1}",
-                "division" => value2.HasValue && value2.Value != 0
-                    ? $"{value1} / {value2.Value}"
-                    : throw new InvalidOperationException(OperationsMessages.DivisionByZeroError),
-                "squareroot" => value1 >= 0
-                    ? $"√{value1}"
-                    : throw new InvalidOperationException(OperationsMessages.NegativeSquareRootError),
-                _ => throw new InvalidOperationException(OperationsMessages.UnknownOperationTypeError)
-            };
+    private async Task<(string result, string operationValues)> GenerateRandomStringResultAsync()
+    {
+        var randomString = await _randomStringService.GenerateRandomStringAsync();
+        return (randomString, OperationsMessages.RandomStringDescription);
+    }
 
-            var result = normalizedOperationType switch
-            {
-                "addition" => (value1 + (value2 ?? 0)).ToString(),
-                "subtraction" => (value1 - (value2 ?? 0)).ToString(),
-                "multiplication" => (value1 * (value2 ?? 1)).ToString(),
-                "division" => (value1 / value2!.Value).ToString(),
-                "squareroot" => Math.Sqrt((double)value1).ToString(),
-                _ => throw new InvalidOperationException(OperationsMessages.UnknownOperationTypeError)
-            };
-
-            return (result, operationValues: operation);
-        });
+    private (string result, string operationValues) CalculateArithmeticOperation(decimal value1, decimal value2, string operatorSymbol, Func<decimal, decimal, decimal> operation)
+    {
+        var result = operation(value1, value2).ToString();
+        var operationValues = $"{value1} {operatorSymbol} {value2}";
+        return (result, operationValues);
     }
 
     public async Task<(int totalRecords, List<OperationRecordDTO> records)> GetPagedOperationsAsync(Guid userId, int page, int pageSize, string query)
@@ -61,25 +57,52 @@ public class OperationService : IOperationService
         var totalRecords = await _operationRepository.GetTotalCountAsync(userId, query);
         var operations = await _operationRepository.GetPagedOperationsAsync(userId, page, pageSize, query);
 
-        var operationDTOs = operations.Select(op => new OperationRecordDTO
-        {
-            Id = op.Id,
-            UserId = op.UserId,
-            OperationTypeId = op.OperationTypeId,
-            OperationTypeDescription = op.OperationTypeDescription,
-            Cost = op.Cost,
-            UserBalance = op.UserBalance,
-            OperationValues = op.OperationValues,
-            OperationResult = op.OperationResult,
-            CreatedAt = op.CreatedAt,
-        }).ToList();
-
+        var operationDTOs = operations.Select(ToDTO).ToList();
         return (totalRecords, operationDTOs);
     }
 
-    public async Task<bool> SaveOperationRecordAsync(OperationRecordDTO operationRecord)
+    private static OperationRecordDTO ToDTO(OperationRecordEntity entity) => new()
     {
-        var retryPolicy = Policy
+        Id = entity.Id,
+        UserId = entity.UserId,
+        OperationTypeId = entity.OperationTypeId,
+        OperationTypeDescription = entity.OperationTypeDescription,
+        Cost = entity.Cost,
+        UserBalance = entity.UserBalance,
+        OperationValues = entity.OperationValues,
+        OperationResult = entity.OperationResult,
+        CreatedAt = entity.CreatedAt,
+    };
+
+    public async Task<OperationRecordDTO?> SaveOperationRecordAsync(OperationRecordDTO operationRecord)
+    {
+        var retryPolicy = CreateRetryPolicy();
+
+        return await retryPolicy.ExecuteAsync(async () =>
+        {
+            var operationRecordEntity = ToEntity(operationRecord);
+
+            if (await _operationRepository.SaveRecordAsync(operationRecordEntity))
+                return ToDTO(operationRecordEntity);
+
+            return null;
+        });
+    }
+
+    private static OperationRecordEntity ToEntity(OperationRecordDTO dto) => new()
+    {
+        Id = Guid.NewGuid(),
+        Cost = dto.Cost,
+        OperationResult = dto.OperationResult,
+        OperationTypeId = dto.OperationTypeId,
+        OperationValues = dto.OperationValues,
+        UserBalance = dto.UserBalance,
+        UserId = dto.UserId,
+        CreatedAt = DateTime.UtcNow,
+    };
+
+    private static IAsyncPolicy CreateRetryPolicy() =>
+        Policy
             .Handle<Exception>()
             .WaitAndRetryAsync(
                 retryCount: 3,
@@ -90,26 +113,11 @@ public class OperationService : IOperationService
                     Console.WriteLine($"Error: {exception.Message}");
                 });
 
-        return await retryPolicy.ExecuteAsync(async () =>
-        {
-            var operationResult = await _operationRepository.SaveRecordAsync(new OperationRecordEntity
-            {
-                Id = Guid.NewGuid(),
-                Cost = operationRecord.Cost,
-                OperationResult = operationRecord.OperationResult,
-                OperationTypeId = operationRecord.OperationTypeId,
-                OperationValues = operationRecord.OperationValues,
-                UserBalance = operationRecord.UserBalance,
-                UserId = operationRecord.UserId,
-                CreatedAt = operationRecord.CreatedAt,
-            });
-
-            return operationResult;
-        });
-    }
-
     public async Task<bool> SoftDeleteOperationRecordsAsync(Guid userId, List<Guid> recordIds)
     {
+        if (recordIds == null || !recordIds.Any())
+            return false;
+
         return await _operationRepository.SoftDeleteOperationRecordsAsync(userId, recordIds);
     }
 }
