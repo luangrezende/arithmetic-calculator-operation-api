@@ -32,10 +32,19 @@ public class UserService : IUserService
             }
         };
 
+        Console.WriteLine($"Payload sent: {JsonSerializer.Serialize(payload)}");
+
         var debitResponse = await _lambdaInvoker.InvokeLambdaAsync<OuterResponse>(FunctionName, payload);
 
         if (debitResponse.StatusCode != 200 || debitResponse.Body == null)
-            throw new InvalidOperationException($"Failed to process the debit response from the User Lambda function.");
+        {
+            Console.WriteLine($"Payload sent: {JsonSerializer.Serialize(payload)}");
+
+            var errorDetails = $"Failed to process the debit response from the User Lambda function. StatusCode: {debitResponse.StatusCode}, Body: {debitResponse.Body ?? "null"}";
+            Console.WriteLine(errorDetails);
+
+            throw new InvalidOperationException(errorDetails);
+        }
 
         return await GetUpdatedBalanceAsync(accountId, token);
     }
