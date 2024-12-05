@@ -22,8 +22,11 @@ public class OperationService : IOperationService
         _randomStringService = randomStringService;
     }
 
-    public string CalculateOperation(string expression)
+    public async Task<string> CalculateOperation(string expression)
     {
+        if (expression.Equals("random_string"))
+            return await _randomStringService.GenerateRandomStringAsync();
+
         var preparedExpression = PrepareExpression(expression);
 
         Expression expressionResult = new(preparedExpression);
@@ -33,8 +36,13 @@ public class OperationService : IOperationService
 
     public async Task<decimal> CalculateOperationPriceAsync(string expression)
     {
-        var operators = ExtractOperators(expression);
-        var operationTypes = await _operationTypeRepository.GetByOperatorCodesAsync(operators);
+        var operators = ExtractOperators(expression).ToList();
+
+        if (expression.Equals("random_string", StringComparison.OrdinalIgnoreCase))
+            operators.Add("random_string");
+
+        var operationTypes = await _operationTypeRepository.GetByOperatorCodesAsync([.. operators]);
+
         decimal totalCost = operationTypes.Sum(op => op.Cost);
 
         return totalCost;
@@ -64,7 +72,7 @@ public class OperationService : IOperationService
             { "√", "square_root" }
         };
 
-        HashSet<string> operators = new HashSet<string>();
+        HashSet<string> operators = [];
 
         foreach (Match match in matches)
         {
