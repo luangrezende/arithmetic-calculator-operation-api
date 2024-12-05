@@ -6,6 +6,8 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories.Interface
     {
         Task<OperationTypeEntity> GetByIdAsync(Guid id);
 
+        Task<List<OperationTypeEntity>> GetByOperatorCodesAsync(string[] operators);
+
         Task<List<OperationTypeEntity>> GetAllAsync();
     }
 }

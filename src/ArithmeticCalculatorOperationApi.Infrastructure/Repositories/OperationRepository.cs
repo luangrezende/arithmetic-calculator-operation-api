@@ -31,14 +31,12 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
                 operations.Add(new OperationRecordEntity
                 {
                     Id = reader.GetGuid("id"),
-                    OperationTypeId = reader.GetGuid("operation_type_id"),
                     UserId = reader.GetGuid("user_id"),
                     Cost = reader.GetDecimal("cost"),
                     UserBalance = reader.GetDecimal("user_balance"),
-                    OperationResult = reader.GetString("operation_result"),
-                    OperationValues = reader.GetString("operation_values"),
+                    Result = reader.GetString("result"),
+                    Expression = reader.GetString("expression"),
                     CreatedAt = reader.GetDateTime("created_at"),
-                    OperationTypeDescription = reader.GetString("operation_type_description"),
                 });
             }
 
@@ -50,24 +48,20 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
             return @"
                 SELECT 
                     r.id, 
-                    r.operation_type_id, 
                     r.user_id, 
                     r.cost, 
                     r.user_balance, 
-                    r.operation_result, 
-                    r.operation_values, 
-                    r.created_at,
-                    ot.description AS operation_type_description
+                    r.result, 
+                    r.expression, 
+                    r.created_at
                 FROM operation_record r
-                INNER JOIN operation_type ot ON r.operation_type_id = ot.id
                 WHERE 
                     r.deleted_at IS NULL AND
                     r.user_id = @UserId AND (
                         @Query = '' OR (
-                            LOWER(ot.description) LIKE CONCAT('%', LOWER(@Query), '%') OR
+                            LOWER(r.result) LIKE CONCAT('%', LOWER(@Query), '%') OR
+                            LOWER(r.expression) LIKE CONCAT('%', LOWER(@Query), '%') OR
                             r.cost LIKE CONCAT('%', @Query, '%') OR
-                            LOWER(r.operation_result) LIKE CONCAT('%', LOWER(@Query), '%') OR
-                            LOWER(r.operation_values) LIKE CONCAT('%', LOWER(@Query), '%') OR
                             (
                                 REPLACE(DATE_FORMAT(r.created_at, '%Y/%m/%d'), '/', '') LIKE REPLACE(CONCAT('%', @Query, '%'), '/', '')
                                 OR DATE_FORMAT(r.created_at, '%Y-%m-%d %H:%i:%s') LIKE CONCAT('%', @Query, '%')
@@ -147,33 +141,30 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
             const string query = @"
                 INSERT INTO operation_record (
                     id, 
-                    operation_type_id, 
                     user_id, 
                     cost, 
                     user_balance, 
-                    operation_result, 
-                    operation_values, 
+                    result, 
+                    expression, 
                     created_at
                 ) VALUES (
                     @Id, 
-                    @OperationTypeId, 
                     @UserId, 
                     @Cost, 
                     @UserBalance, 
-                    @OperationResult, 
-                    @OperationValues, 
+                    @Result, 
+                    @Expression, 
                     @CreatedAt
                 )";
 
             var parameters = new[]
             {
                 new MySqlParameter("@Id", MySqlDbType.Guid) { Value = operationRecord.Id },
-                new MySqlParameter("@OperationTypeId", MySqlDbType.Guid) { Value = operationRecord.OperationTypeId },
                 new MySqlParameter("@UserId", MySqlDbType.Guid) { Value = operationRecord.UserId },
                 new MySqlParameter("@Cost", MySqlDbType.Decimal) { Value = operationRecord.Cost },
                 new MySqlParameter("@UserBalance", MySqlDbType.Decimal) { Value = operationRecord.UserBalance },
-                new MySqlParameter("@OperationResult", MySqlDbType.Text) { Value = operationRecord.OperationResult },
-                new MySqlParameter("@OperationValues", MySqlDbType.Text) { Value = operationRecord.OperationValues },
+                new MySqlParameter("@Result", MySqlDbType.Text) { Value = operationRecord.Result },
+                new MySqlParameter("@Expression", MySqlDbType.Text) { Value = operationRecord.Expression },
                 new MySqlParameter("@CreatedAt", MySqlDbType.Timestamp) { Value = operationRecord.CreatedAt }
             };
 
@@ -187,5 +178,4 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
             return rowsAffected > 0;
         }
     }
-
 }

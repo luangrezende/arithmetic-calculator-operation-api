@@ -6,6 +6,8 @@
 
         public string Description { get; set; }
 
+        public string OperatorCode { get; set; }
+
         public decimal Cost { get; set; }
 
         public DateTime CreatedAt { get; set; }

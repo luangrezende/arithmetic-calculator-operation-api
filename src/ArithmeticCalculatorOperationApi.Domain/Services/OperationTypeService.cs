@@ -22,6 +22,7 @@ namespace ArithmeticCalculatorOperationApi.Domain.Services
                 Id = result.Id,
                 Cost = result.Cost,
                 Description = result.Description,
+                OperatorCode = result.OperatorCode,
             };
         }
 
@@ -29,7 +30,7 @@ namespace ArithmeticCalculatorOperationApi.Domain.Services
         {
             var result = await _operationTypeRepository.GetAllAsync();
 
-            if (result == null || !result.Any())
+            if (result == null || result.Count == 0)
                 return null;
 
             return result.Select(r => new OperationTypeDTO
@@ -37,6 +38,7 @@ namespace ArithmeticCalculatorOperationApi.Domain.Services
                 Id = r.Id,
                 Cost = r.Cost,
                 Description = r.Description,
+                OperatorCode = r.OperatorCode,
             }).ToList();
         }
 

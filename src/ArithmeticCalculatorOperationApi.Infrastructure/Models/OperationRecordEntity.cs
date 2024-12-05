@@ -4,19 +4,15 @@
     {
         public Guid Id { get; set; }
 
-        public Guid OperationTypeId { get; set; }
-
-        public string OperationTypeDescription { get; set; }
-
         public Guid UserId { get; set; }
 
         public decimal Cost { get; set; }
 
         public decimal UserBalance { get; set; }
 
-        public string OperationResult { get; set; } = string.Empty;
+        public string Result { get; set; } = string.Empty;
 
-        public string OperationValues { get; set; } = string.Empty;
+        public string Expression { get; set; } = string.Empty;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }

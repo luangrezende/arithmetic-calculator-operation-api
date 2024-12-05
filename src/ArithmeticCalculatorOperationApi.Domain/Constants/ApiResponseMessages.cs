@@ -11,6 +11,8 @@
         public const string InvalidToken = "Invalid token.";
         public const string TokenExpired = "Token expired.";
         public const string OperationNotFound = "The requested operation does not exist.";
+        public const string AccountIdNotNull = "accountId cannot be null.";
+        public const string ExpressionNotNull = "expression cannot be null.";
         public const string OperationAdded = "Operation was successfully added.";
         public const string AddBalanceSuccess = "Balance added successfully.";
         public const string InvalidAmount = "The amount is invalid.";

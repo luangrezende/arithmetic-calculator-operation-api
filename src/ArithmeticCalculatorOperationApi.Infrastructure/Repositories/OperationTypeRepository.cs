@@ -18,7 +18,7 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
         public async Task<List<OperationTypeEntity>> GetAllAsync()
         {
             const string query = @"
-                SELECT ot.id, ot.cost, ot.description, ot.created_at, ot.updated_at
+                SELECT ot.id, ot.operator_code, ot.cost, ot.description, ot.created_at, ot.updated_at
                 FROM operation_type ot";
 
             var operationTypes = new List<OperationTypeEntity>();
@@ -34,6 +34,7 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
                 var operationType = new OperationTypeEntity
                 {
                     Id = reader.GetGuid("id"),
+                    OperatorCode = reader.GetString("operator_code"),
                     Cost = reader.GetDecimal("cost"),
                     Description = reader.GetString("description"),
                     CreatedAt = reader.GetDateTime("created_at"),
@@ -45,11 +46,10 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
             return operationTypes;
         }
 
-
         public async Task<OperationTypeEntity> GetByIdAsync(Guid id)
         {
             const string query = @"
-                SELECT ot.id, ot.cost, ot.description, ot.created_at, ot.updated_at
+                SELECT ot.id, ot.operator_code, ot.cost, ot.description, ot.created_at, ot.updated_at
                 FROM operation_type ot
                 WHERE ot.id = @OperationTypeId";
 
@@ -70,6 +70,7 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
                 operationType = new OperationTypeEntity
                 {
                     Id = reader.GetGuid("id"),
+                    OperatorCode = reader.GetString("operator_code"),
                     Cost = reader.GetDecimal("cost"),
                     Description = reader.GetString("description"),
                     CreatedAt = reader.GetDateTime("created_at"),
@@ -79,5 +80,48 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
 
             return operationType;
         }
+
+        public async Task<List<OperationTypeEntity>> GetByOperatorCodesAsync(string[] operators)
+        {
+            var query = @"
+                SELECT ot.id, ot.operator_code, ot.cost, ot.description, ot.created_at, ot.updated_at
+                FROM operation_type ot
+                WHERE ot.operator_code IN ({0})";
+
+            var parameters = new List<MySqlParameter>();
+            var operatorPlaceholders = string.Join(",", operators.Select((op, index) => {
+                var paramName = $"@Operator{index}";
+                parameters.Add(new MySqlParameter(paramName, MySqlDbType.VarChar) { Value = op });
+                return paramName;
+            }));
+
+            query = string.Format(query, operatorPlaceholders);
+
+            var operationTypes = new List<OperationTypeEntity>();
+
+            using var connection = new MySqlConnection(_connectionString);
+            await connection.OpenAsync();
+
+            using var cmd = new MySqlCommand(query, connection);
+            cmd.Parameters.AddRange(parameters.ToArray());
+
+            using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                var operationType = new OperationTypeEntity
+                {
+                    Id = reader.GetGuid("id"),
+                    OperatorCode = reader.GetString("operator_code"),
+                    Cost = reader.GetDecimal("cost"),
+                    Description = reader.GetString("description"),
+                    CreatedAt = reader.GetDateTime("created_at"),
+                    UpdatedAt = reader.GetDateTime("updated_at"),
+                };
+                operationTypes.Add(operationType);
+            }
+
+            return operationTypes;
+        }
+
     }
 }
