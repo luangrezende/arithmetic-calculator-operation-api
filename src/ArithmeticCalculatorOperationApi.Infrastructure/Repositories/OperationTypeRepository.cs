@@ -122,6 +122,5 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
 
             return operationTypes;
         }
-
     }
 }

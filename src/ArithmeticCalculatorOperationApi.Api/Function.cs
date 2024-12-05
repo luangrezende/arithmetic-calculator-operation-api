@@ -264,6 +264,7 @@ public class Function
             InvalidOperationException invalidEx => BuildResponse(HttpStatusCode.BadRequest, new { error = invalidEx.Message }),
             SecurityTokenExpiredException => BuildResponse(HttpStatusCode.Unauthorized, new { error = ApiResponseMessages.TokenExpired }),
             SecurityTokenMalformedException => BuildResponse(HttpStatusCode.BadRequest, new { error = ApiResponseMessages.InvalidToken }),
+            ArgumentException argEx => BuildResponse(HttpStatusCode.BadRequest, new { argEx.Message }),
             _ => BuildResponse(HttpStatusCode.InternalServerError, new { error = ApiResponseMessages .InternalServerError}),
         };
     }
