@@ -261,7 +261,7 @@ public class Function
         return ex switch
         {
             HttpResponseException httpEx => BuildResponse(httpEx.StatusCode, new { httpEx.ResponseBody }),
-            InvalidOperationException invalidEx => BuildResponse(HttpStatusCode.BadRequest, invalidEx.Message),
+            InvalidOperationException invalidEx => BuildResponse(HttpStatusCode.BadRequest, new { error = invalidEx.Message }),
             SecurityTokenExpiredException => BuildResponse(HttpStatusCode.Unauthorized, new { error = ApiResponseMessages.TokenExpired }),
             SecurityTokenMalformedException => BuildResponse(HttpStatusCode.BadRequest, new { error = ApiResponseMessages.InvalidToken }),
             _ => BuildResponse(HttpStatusCode.InternalServerError, new { error = ex.Message }),
