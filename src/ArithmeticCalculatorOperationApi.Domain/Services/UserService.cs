@@ -49,7 +49,7 @@ public class UserService : IUserService
             InnerResponse<ErrorApiUserResponse>? errorResponse = JsonSerializer.Deserialize<InnerResponse<ErrorApiUserResponse>>(debitResponse.Body!);
             
             if (errorResponse != null)
-                throw new InvalidOperationException(JsonSerializer.Serialize(errorResponse.Data));
+                throw new InvalidOperationException(JsonSerializer.Serialize(errorResponse.Data.Error));
         }
 
         return await GetUpdatedBalanceAsync(accountId, token);
