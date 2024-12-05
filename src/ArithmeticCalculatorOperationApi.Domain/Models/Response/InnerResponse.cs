@@ -2,12 +2,12 @@
 
 namespace ArithmeticCalculatorOperationApi.Domain.Models.Response
 {
-    public class InnerResponse
+    public class InnerResponse<T>
     {
         [JsonPropertyName("statusCode")]
         public int StatusCode { get; set; }
 
         [JsonPropertyName("data")]
-        public InnerData? Data { get; set; }
+        public T Data { get; set; }
     }
 }

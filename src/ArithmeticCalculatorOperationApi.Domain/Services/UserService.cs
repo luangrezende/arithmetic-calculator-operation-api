@@ -1,5 +1,6 @@
 ﻿using ArithmeticCalculatorOperationApi.Domain.Models.Response;
 using ArithmeticCalculatorOperationApi.Domain.Services.Interfaces;
+using System.Net;
 using System.Text.Json;
 
 public class UserService : IUserService
@@ -36,14 +37,19 @@ public class UserService : IUserService
 
         var debitResponse = await _lambdaInvoker.InvokeLambdaAsync<OuterResponse>(FunctionName, payload);
 
-        if (debitResponse.StatusCode != 200 || debitResponse.Body == null)
+        if (debitResponse.StatusCode != 200 || string.IsNullOrEmpty(debitResponse.Body))
         {
             Console.WriteLine($"Payload sent: {JsonSerializer.Serialize(payload)}");
 
-            var errorDetails = $"Failed to process the debit response from the User Lambda function. StatusCode: {debitResponse.StatusCode}, Body: {debitResponse.Body ?? "null"}";
-            Console.WriteLine(errorDetails);
+            var errorMessage = $"Failed to process the debit response from the User Lambda function. " +
+                               $"StatusCode: {debitResponse.StatusCode}, Body: {debitResponse.Body ?? "null"}";
 
-            throw new InvalidOperationException(errorDetails);
+            Console.WriteLine(errorMessage);
+
+            InnerResponse<ErrorApiUserResponse>? errorResponse = JsonSerializer.Deserialize<InnerResponse<ErrorApiUserResponse>>(debitResponse.Body!);
+            
+            if (errorResponse != null)
+                throw new InvalidOperationException(JsonSerializer.Serialize(errorResponse.Data));
         }
 
         return await GetUpdatedBalanceAsync(accountId, token);
