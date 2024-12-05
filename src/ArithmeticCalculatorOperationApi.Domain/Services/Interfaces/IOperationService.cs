@@ -4,7 +4,7 @@ namespace ArithmeticCalculatorOperationApi.Domain.Services.Interfaces
 {
     public interface IOperationService
     {
-        string CalculateOperation(string expression);
+        Task<string> CalculateOperation(string expression);
 
         Task<decimal> CalculateOperationPriceAsync(string expression);
 

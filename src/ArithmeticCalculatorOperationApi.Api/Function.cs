@@ -188,7 +188,7 @@ public class Function
             });
 
         var operationPrice = await operationService.CalculateOperationPriceAsync(addOperationRequest.Expression!);
-        var result = operationService.CalculateOperation(addOperationRequest.Expression!);
+        var result = await operationService.CalculateOperation(addOperationRequest.Expression!);
 
         var updatedBalance = await userService.DebitUserBalanceDirectAsync(addOperationRequest.AccountId, operationPrice, token);
 
