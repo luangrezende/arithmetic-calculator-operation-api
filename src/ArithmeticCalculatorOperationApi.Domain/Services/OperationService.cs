@@ -1,55 +1,81 @@
-﻿using ArithmeticCalculatorOperationApi.Domain.Constants;
-using ArithmeticCalculatorOperationApi.Domain.Models.DTO;
+﻿using ArithmeticCalculatorOperationApi.Domain.Models.DTO;
 using ArithmeticCalculatorOperationApi.Domain.Services.Interfaces;
 using ArithmeticCalculatorOperationApi.Infrastructure.Models;
 using ArithmeticCalculatorOperationApi.Infrastructure.Repositories.Interfaces;
+using NCalc;
 using Polly;
+using System.Text.RegularExpressions;
 
 public class OperationService : IOperationService
 {
     private readonly IOperationRepository _operationRepository;
+    private readonly IOperationTypeRepository _operationTypeRepository;
     private readonly IRandomStringService _randomStringService;
 
-    public OperationService(IOperationRepository operationRepository, IRandomStringService randomStringService)
+    public OperationService(
+        IOperationRepository operationRepository,
+        IOperationTypeRepository operationTypeRepository, 
+        IRandomStringService randomStringService)
     {
         _operationRepository = operationRepository;
+        _operationTypeRepository = operationTypeRepository;
         _randomStringService = randomStringService;
     }
 
-    public async Task<(string result, string operationValues)> CalculateOperationResult(string operationType, decimal value1, decimal? value2 = null)
+    public string CalculateOperation(string expression)
     {
-        if (string.IsNullOrWhiteSpace(operationType))
-            throw new ArgumentException(OperationsMessages.UnknownOperationTypeError);
+        var preparedExpression = PrepareExpression(expression);
 
-        var normalizedOperationType = operationType.Replace(" ", "").ToLower();
+        Expression expressionResult = new(preparedExpression);
 
-        return normalizedOperationType switch
+        return expressionResult.Evaluate().ToString()!;
+    }
+
+    public async Task<decimal> CalculateOperationPriceAsync(string expression)
+    {
+        var operators = ExtractOperators(expression);
+        var operationTypes = await _operationTypeRepository.GetByOperatorCodesAsync(operators);
+        decimal totalCost = operationTypes.Sum(op => op.Cost);
+
+        return totalCost;
+    }
+
+    private static string PrepareExpression(string expression)
+    {
+        expression = expression.Replace("√", "Sqrt");
+        expression = Regex.Replace(expression, @"(\d+(\.\d+)?)\s*\^\s*(\d+(\.\d+)?)", "Pow($1, $3)");
+        expression = Regex.Replace(expression, @"\^\((\d+(\.\d+)?),\s*(\d+(\.\d+)?)\)", "Pow($1, $3)");
+
+        return expression;
+    }
+
+    public static string[] ExtractOperators(string expression)
+    {
+        var operatorPattern = @"[+\-*/^√]";
+        var matches = Regex.Matches(expression, operatorPattern);
+
+        var operatorMap = new Dictionary<string, string>
         {
-            "randomstring" => await GenerateRandomStringResultAsync(),
-            "addition" => CalculateArithmeticOperation(value1, value2 ?? 0, "+", (a, b) => a + b),
-            "subtraction" => CalculateArithmeticOperation(value1, value2 ?? 0, "-", (a, b) => a - b),
-            "multiplication" => CalculateArithmeticOperation(value1, value2 ?? 1, "*", (a, b) => a * b),
-            "division" => value2.HasValue && value2.Value != 0
-                ? CalculateArithmeticOperation(value1, value2.Value, "/", (a, b) => a / b)
-                : throw new InvalidOperationException(OperationsMessages.DivisionByZeroError),
-            "squareroot" => value1 >= 0
-                ? (Math.Sqrt((double)value1).ToString(), $"√{value1}")
-                : throw new InvalidOperationException(OperationsMessages.NegativeSquareRootError),
-            _ => throw new InvalidOperationException(OperationsMessages.UnknownOperationTypeError)
+            { "+", "addition" },
+            { "-", "subtraction" },
+            { "*", "multiplication" },
+            { "/", "division" },
+            { "^", "exponentiation" },
+            { "√", "square_root" }
         };
-    }
 
-    private async Task<(string result, string operationValues)> GenerateRandomStringResultAsync()
-    {
-        var randomString = await _randomStringService.GenerateRandomStringAsync();
-        return (randomString, OperationsMessages.RandomStringDescription);
-    }
+        HashSet<string> operators = new HashSet<string>();
 
-    private (string result, string operationValues) CalculateArithmeticOperation(decimal value1, decimal value2, string operatorSymbol, Func<decimal, decimal, decimal> operation)
-    {
-        var result = operation(value1, value2).ToString();
-        var operationValues = $"{value1} {operatorSymbol} {value2}";
-        return (result, operationValues);
+        foreach (Match match in matches)
+        {
+            var symbol = match.Value;
+            if (operatorMap.ContainsKey(symbol))
+            {
+                operators.Add(operatorMap[symbol]);
+            }
+        }
+
+        return [.. operators];
     }
 
     public async Task<(int totalRecords, List<OperationRecordDTO> records)> GetPagedOperationsAsync(Guid userId, int page, int pageSize, string query)
@@ -65,12 +91,10 @@ public class OperationService : IOperationService
     {
         Id = entity.Id,
         UserId = entity.UserId,
-        OperationTypeId = entity.OperationTypeId,
-        OperationTypeDescription = entity.OperationTypeDescription,
         Cost = entity.Cost,
         UserBalance = entity.UserBalance,
-        OperationValues = entity.OperationValues,
-        OperationResult = entity.OperationResult,
+        Expression = entity.Expression,
+        Result = entity.Result,
         CreatedAt = entity.CreatedAt,
     };
 
@@ -93,9 +117,8 @@ public class OperationService : IOperationService
     {
         Id = Guid.NewGuid(),
         Cost = dto.Cost,
-        OperationResult = dto.OperationResult,
-        OperationTypeId = dto.OperationTypeId,
-        OperationValues = dto.OperationValues,
+        Result = dto.Result,
+        Expression = dto.Expression,
         UserBalance = dto.UserBalance,
         UserId = dto.UserId,
         CreatedAt = DateTime.UtcNow,

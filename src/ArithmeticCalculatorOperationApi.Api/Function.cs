@@ -129,11 +129,10 @@ public class Function
         var mappedRecords = records.Select(record => new OperationRecordResponse
         {
             Id = record.Id,
-            OperationTypeDescription = record.OperationTypeDescription,
             Cost = record.Cost,
             UserBalance = record.UserBalance,
-            OperationValues = record.OperationValues,
-            OperationResult = record.OperationResult,
+            Expression = record.Expression,
+            Result = record.Result,
             CreatedAt = record.CreatedAt
         }).ToList();
 
@@ -173,29 +172,33 @@ public class Function
 
         var addOperationRequest = ParseRequestOrThrow<AddOperationRequest>(request.Body);
 
-        var operationTypeService = _serviceProvider.GetRequiredService<IOperationTypeService>();
         var operationService = _serviceProvider.GetRequiredService<IOperationService>();
         var userService = _serviceProvider.GetRequiredService<IUserService>();
 
-        var operation = await operationTypeService.GetByIdAsync(addOperationRequest.OperationTypeId);
-        if (operation?.Id == Guid.Empty)
+        if (addOperationRequest?.AccountId == Guid.Empty)
             return BuildResponse(HttpStatusCode.BadRequest, new
             {
-                error = ApiResponseMessages.OperationNotFound
+                error = ApiResponseMessages.AccountIdNotNull
             });
 
-        var (result, operationValues) = await operationService.CalculateOperationResult(operation!.Description, addOperationRequest.Value1, addOperationRequest.Value2);
-        
-        var updatedBalance = await userService.DebitUserBalanceDirectAsync(addOperationRequest.AccountId, operation!.Cost, token);
+        if (string.IsNullOrEmpty(addOperationRequest?.Expression))
+            return BuildResponse(HttpStatusCode.BadRequest, new
+            {
+                error = ApiResponseMessages.ExpressionNotNull
+            });
+
+        var operationPrice = await operationService.CalculateOperationPriceAsync(addOperationRequest.Expression!);
+        var result = operationService.CalculateOperation(addOperationRequest.Expression!);
+
+        var updatedBalance = await userService.DebitUserBalanceDirectAsync(addOperationRequest.AccountId, operationPrice, token);
 
         var operationDto = new OperationRecordDTO
         {
             UserId = userId,
-            OperationTypeId = addOperationRequest.OperationTypeId,
-            Cost = operation.Cost,
+            Cost = operationPrice,
             UserBalance = updatedBalance,
-            OperationValues = operationValues,
-            OperationResult = result
+            Expression = addOperationRequest.Expression,
+            Result = result
         };
 
         var operationSaved = await operationService.SaveOperationRecordAsync(operationDto);
@@ -207,8 +210,8 @@ public class Function
             {
                 Id = operationSaved.Id,
                 Cost = operationDto.Cost,
-                OperationValues = operationDto.OperationValues,
-                OperationResult = operationDto.OperationResult,
+                Expression = operationDto.Expression,
+                Result = operationDto.Result,
                 UserBalance = operationDto.UserBalance,
                 CreatedAt = operationSaved.CreatedAt,
             }

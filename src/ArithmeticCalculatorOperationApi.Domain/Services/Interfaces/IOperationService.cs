@@ -4,7 +4,9 @@ namespace ArithmeticCalculatorOperationApi.Domain.Services.Interfaces
 {
     public interface IOperationService
     {
-        Task<(string result, string operationValues)> CalculateOperationResult(string operationType, decimal value1, decimal? value2 = null);
+        string CalculateOperation(string expression);
+
+        Task<decimal> CalculateOperationPriceAsync(string expression);
 
         Task<(int totalRecords, List<OperationRecordDTO> records)> GetPagedOperationsAsync(Guid userId, int page, int pageSize, string query);
 

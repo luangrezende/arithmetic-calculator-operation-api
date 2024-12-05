@@ -10,6 +10,9 @@ namespace ArithmeticCalculatorOperationApi.Domain.Models.Response
         [JsonPropertyName("description")]
         public string Description { get; set; }
 
+        [JsonPropertyName("operationCode")]
+        public string OperatorCode { get; set; }
+
         [JsonPropertyName("cost")]
         public decimal Cost { get; set; }
     }

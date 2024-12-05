@@ -7,20 +7,17 @@ namespace ArithmeticCalculatorOperationApi.Domain.Models.Response
         [JsonPropertyName("id")]
         public Guid Id { get; set; }
 
-        [JsonPropertyName("operationTypeDescription")]
-        public string OperationTypeDescription { get; set; }
-
         [JsonPropertyName("cost")]
         public decimal Cost { get; set; }
 
         [JsonPropertyName("userBalance")]
         public decimal UserBalance { get; set; }
 
-        [JsonPropertyName("operationValues")]
-        public string OperationValues { get; set; }
+        [JsonPropertyName("expression")]
+        public string Expression { get; set; }
 
-        [JsonPropertyName("operationResult")]
-        public string OperationResult { get; set; }
+        [JsonPropertyName("result")]
+        public string Result { get; set; }
 
         [JsonPropertyName("createdAt")]
         public DateTime CreatedAt { get; set; }
