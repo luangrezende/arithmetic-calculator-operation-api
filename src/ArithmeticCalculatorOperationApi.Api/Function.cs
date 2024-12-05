@@ -126,14 +126,21 @@ public class Function
 
         var (totalRecords, records) = await operationService.GetPagedOperationsAsync(userId, page, pageSize, query);
 
-        var mappedRecords = records.Select(record => new OperationRecordResponse
+        //todo: refactor
+        var mappedRecords = records.Select(record =>
         {
-            Id = record.Id,
-            Cost = record.Cost,
-            UserBalance = record.UserBalance,
-            Expression = record.Expression,
-            Result = record.Result,
-            CreatedAt = record.CreatedAt
+            var isRandomString = record.Expression == "random_string";
+
+            return new OperationRecordResponse
+            {
+                Id = record.Id,
+                Cost = record.Cost,
+                UserBalance = record.UserBalance,
+                Type = isRandomString ? "Random String" : "Arithmetic Operation",
+                Expression = isRandomString ? "-" : record.Expression,
+                Result = record.Result,
+                CreatedAt = record.CreatedAt
+            };
         }).ToList();
 
         return BuildResponse(HttpStatusCode.OK, new OperationRecordPagedResponse
@@ -161,6 +168,7 @@ public class Function
             Id = op.Id,
             Cost = op.Cost,
             Description = op.Description,
+            OperatorCode = op.OperatorCode,
         }).ToList();
 
         return BuildResponse(HttpStatusCode.OK, operationResponses);

@@ -16,6 +16,9 @@ namespace ArithmeticCalculatorOperationApi.Domain.Models.Response
         [JsonPropertyName("expression")]
         public string Expression { get; set; }
 
+        [JsonPropertyName("type")]
+        public string Type { get; set; }
+
         [JsonPropertyName("result")]
         public string Result { get; set; }
 
