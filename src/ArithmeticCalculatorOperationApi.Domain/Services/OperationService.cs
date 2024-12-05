@@ -45,6 +45,9 @@ public class OperationService : IOperationService
     {
         var operators = ExtractOperators(expression).ToList();
 
+        if (operators.Count == 0)
+            throw new ArgumentException("The provided expression is not a valid arithmetic operation.");
+
         if (expression.Equals("random_string", StringComparison.OrdinalIgnoreCase))
             operators.Add("random_string");
 
