@@ -24,19 +24,29 @@ public class OperationService : IOperationService
 
     public async Task<string> CalculateOperation(string expression)
     {
-        if (expression.Equals("random_string"))
-            return await _randomStringService.GenerateRandomStringAsync();
+        try
+        {
+            if (expression.Equals("random_string"))
+                return await _randomStringService.GenerateRandomStringAsync();
 
-        var preparedExpression = PrepareExpression(expression);
+            var preparedExpression = PrepareExpression(expression);
 
-        Expression expressionResult = new(preparedExpression);
+            Expression expressionResult = new(preparedExpression);
 
-        return expressionResult.Evaluate().ToString()!;
+            return expressionResult.Evaluate().ToString()!;
+        }
+        catch
+        {
+            throw new ArgumentException("The provided expression is not a valid arithmetic operation.");
+        }
     }
 
     public async Task<decimal> CalculateOperationPriceAsync(string expression)
     {
         var operators = ExtractOperators(expression).ToList();
+
+        if (operators.Count == 0)
+            throw new ArgumentException("The provided expression is not a valid arithmetic operation.");
 
         if (expression.Equals("random_string", StringComparison.OrdinalIgnoreCase))
             operators.Add("random_string");
