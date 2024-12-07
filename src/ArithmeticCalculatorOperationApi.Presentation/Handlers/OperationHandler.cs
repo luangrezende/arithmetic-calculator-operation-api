@@ -57,12 +57,10 @@ namespace ArithmeticCalculatorOperationApi.Presentation.Handlers
 
         public async Task<APIGatewayProxyResponse> GetDashboardData(APIGatewayProxyRequest request)
         {
-            //var userId = ValidateTokenAndReturnUserId(request);
-
-            var guidsds = Guid.Parse("ed7dfc2e-2807-4920-975b-29a18f344ce3");
+            var userId = ValidateTokenAndReturnUserId(request);
 
             var operationService = _serviceProvider.GetRequiredService<IOperationService>();
-            var data = await operationService.GetDashboardDataAsync(guidsds);
+            var data = await operationService.GetDashboardDataAsync(userId);
 
             return ResponseHelper.BuildResponse(HttpStatusCode.OK, data);
         }
