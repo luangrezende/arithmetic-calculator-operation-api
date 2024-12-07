@@ -27,6 +27,7 @@ namespace ArithmeticCalculatorOperationApi.Presentation.Handlers
             {
                 "GET" when request.Path == "/v1/operations/types" => await GetOperationsType(request),
                 "GET" when request.Path == "/v1/operations/records" => await GetPagedOperations(request),
+                "GET" when request.Path == "/v1/operations/dashboard" => await GetDashboardData(request),
                 "POST" when request.Path == "/v1/operations/records" => await AddOperation(request),
                 "DELETE" when request.Path == "/v1/operations/records" => await SoftDeleteOperationRecords(request),
                 _ => ResponseHelper.BuildResponse(HttpStatusCode.NotFound, new { error = ApiErrorMessages.EndpointNotFound })
@@ -52,6 +53,16 @@ namespace ArithmeticCalculatorOperationApi.Presentation.Handlers
                 return ResponseHelper.BuildResponse(HttpStatusCode.NotFound, new { error = OperationsErrorMessages.RecordsNotFoundOrDeleted });
 
             return ResponseHelper.BuildResponse(HttpStatusCode.NoContent, null!);
+        }
+
+        public async Task<APIGatewayProxyResponse> GetDashboardData(APIGatewayProxyRequest request)
+        {
+            var userId = ValidateTokenAndReturnUserId(request);
+
+            var operationService = _serviceProvider.GetRequiredService<IOperationService>();
+            var data = await operationService.GetDashboardDataAsync(userId);
+
+            return ResponseHelper.BuildResponse(HttpStatusCode.OK, data);
         }
 
         private async Task<APIGatewayProxyResponse> GetPagedOperations(APIGatewayProxyRequest request)

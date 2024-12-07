@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArithmeticCalculatorOperati
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArithmeticCalculatorOperationApi.Presentation", "src\ArithmeticCalculatorOperationApi.Presentation\ArithmeticCalculatorOperationApi.Presentation.csproj", "{93D06435-49C4-4E96-B29F-FF34B40C6C25}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArithmeticCalculatorOperationApi.Application.Tests", "tests\ArithmeticCalculatorOperationApi.Application.Tests\ArithmeticCalculatorOperationApi.Application.Tests.csproj", "{3DF76559-63DB-4F52-90B0-431457495130}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -37,6 +39,10 @@ Global
 		{93D06435-49C4-4E96-B29F-FF34B40C6C25}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{93D06435-49C4-4E96-B29F-FF34B40C6C25}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{93D06435-49C4-4E96-B29F-FF34B40C6C25}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3DF76559-63DB-4F52-90B0-431457495130}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3DF76559-63DB-4F52-90B0-431457495130}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3DF76559-63DB-4F52-90B0-431457495130}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3DF76559-63DB-4F52-90B0-431457495130}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -46,6 +52,7 @@ Global
 		{DB2BA289-B79F-47D3-9E02-44FF101417CE} = {CAB6D4B6-EDF0-42D1-8DA5-0017F2AEEDBD}
 		{AF50A8BC-4AAF-4875-B7A6-D98606CE9911} = {CAB6D4B6-EDF0-42D1-8DA5-0017F2AEEDBD}
 		{93D06435-49C4-4E96-B29F-FF34B40C6C25} = {CAB6D4B6-EDF0-42D1-8DA5-0017F2AEEDBD}
+		{3DF76559-63DB-4F52-90B0-431457495130} = {F9C4D30A-F41D-48E1-A42D-9CA860C2EBC0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {365B62F0-A4AA-47B6-B938-A694DCE6355F}

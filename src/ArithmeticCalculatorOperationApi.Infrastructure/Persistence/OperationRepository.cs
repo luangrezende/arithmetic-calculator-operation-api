@@ -177,5 +177,80 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
             var rowsAffected = await cmd.ExecuteNonQueryAsync();
             return rowsAffected > 0;
         }
+
+        public async Task<DashboardEntity> GetDashboardDataAsync(Guid userId)
+        {
+            const string query = @"
+                SELECT 
+                    -- Total de operações do usuário
+                    (SELECT COUNT(*) 
+                     FROM operation_record 
+                     WHERE user_id = @UserId AND deleted_at IS NULL) AS TotalOperations,
+             
+                    -- Total de operações no mês atual
+                    (SELECT COUNT(*) 
+                     FROM operation_record 
+                     WHERE user_id = @UserId AND deleted_at IS NULL
+                     AND MONTH(created_at) = MONTH(CURRENT_DATE)
+                     AND YEAR(created_at) = YEAR(CURRENT_DATE)) AS TotalMonthlyOperations,
+
+                    -- Total de crédito (soma dos saldos)
+                    (SELECT COALESCE(SUM(balance), 0) 
+                     FROM bank_account 
+                     WHERE user_id = @UserId) AS TotalCredit,
+
+                    -- Total de dinheiro adicionado no ano atual
+                    (SELECT COALESCE(SUM(amount), 0) 
+                     FROM balance_record br
+                     JOIN bank_account ba ON br.account_id = ba.id
+                     WHERE ba.user_id = @UserId 
+                     AND br.type = 'credit'
+                     AND YEAR(br.created_at) = YEAR(CURRENT_DATE)) AS TotalAnnualCashAdded,
+
+                    -- Total de operações na plataforma
+                    (SELECT COUNT(*) 
+                     FROM operation_record 
+                     WHERE deleted_at IS NULL) AS TotalPlatformOperations,
+
+                    -- Total de dinheiro gasto na plataforma
+                    (SELECT COALESCE(SUM(cost), 0) 
+                     FROM operation_record 
+                     WHERE deleted_at IS NULL) AS TotalPlatformCashSpent,
+
+                    -- Total de dinheiro adicionado na plataforma
+                    (SELECT COALESCE(SUM(amount), 0) 
+                     FROM balance_record br
+                     JOIN bank_account ba ON br.account_id = ba.id
+                     WHERE br.type = 'credit') AS TotalPlatformCashAdded
+            ";
+
+            var parameters = new[]
+            {
+                new MySqlParameter("@UserId", MySqlDbType.Guid) { Value = userId }
+            };
+
+            using var connection = new MySqlConnection(_connectionString);
+            await connection.OpenAsync();
+
+            using var cmd = new MySqlCommand(query, connection);
+            cmd.Parameters.AddRange(parameters);
+
+            using var reader = await cmd.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                return new DashboardEntity
+                {
+                    TotalOperations = reader.GetInt32("TotalOperations"),
+                    TotalMonthlyOperations = reader.GetInt32("TotalMonthlyOperations"),
+                    TotalCredit = reader.GetDecimal("TotalCredit"),
+                    TotalAnnualCashAdded = reader.GetInt32("TotalAnnualCashAdded"),
+                    TotalPlatformOperations = reader.GetInt32("TotalPlatformOperations"),
+                    TotalPlatformCashSpent = reader.GetDecimal("TotalPlatformCashSpent"),
+                    TotalPlatformCashAdded = reader.GetDecimal("TotalPlatformCashAdded")
+                };
+            }
+
+            return new DashboardEntity();
+        }
     }
 }
