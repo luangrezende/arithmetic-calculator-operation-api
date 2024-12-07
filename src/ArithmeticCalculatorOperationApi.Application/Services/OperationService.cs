@@ -1,6 +1,7 @@
 ﻿using ArithmeticCalculatorOperationApi.Application.DTOs;
 using ArithmeticCalculatorOperationApi.Application.Interfaces.Repositories;
 using ArithmeticCalculatorOperationApi.Application.Interfaces.Services;
+using ArithmeticCalculatorOperationApi.Application.Models.Response;
 using ArithmeticCalculatorOperationApi.Domain.Entities;
 using NCalc;
 using Polly;
@@ -33,7 +34,7 @@ public class OperationService : IOperationService
 
             Expression expressionResult = new(preparedExpression);
 
-            return expressionResult.Evaluate().ToString()!;
+            return expressionResult.Evaluate()!.ToString()!;
         }
         catch
         {
@@ -160,5 +161,21 @@ public class OperationService : IOperationService
             return false;
 
         return await _operationRepository.SoftDeleteOperationRecordsAsync(userId, recordIds);
+    }
+
+    public async Task<DashboardResponse> GetDashboardDataAsync(Guid userId)
+    {
+        var result = await _operationRepository.GetDashboardDataAsync(userId);
+
+        return new DashboardResponse
+        {
+            TotalOperations = result.TotalOperations,
+            TotalMonthlyOperations = result.TotalMonthlyOperations,
+            TotalCredit = result.TotalCredit,
+            TotalAnnualCashAdded = result.TotalAnnualCashAdded,
+            TotalPlatformOperations = result.TotalPlatformOperations,
+            TotalPlatformCashSpent = result.TotalPlatformCashSpent,
+            TotalPlatformCashAdded = result.TotalPlatformCashAdded
+        };
     }
 }
