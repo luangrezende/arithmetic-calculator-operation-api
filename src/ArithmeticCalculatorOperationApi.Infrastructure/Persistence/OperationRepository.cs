@@ -185,7 +185,7 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
                     -- Total number of operations for the user
                     (SELECT COUNT(*) 
                      FROM operation_record 
-                     WHERE user_id = @UserId AND deleted_at IS NULL) AS TotalOperations,
+                     WHERE user_id = @UserId) AS TotalOperations,
  
                     -- Total number of operations in the current month
                     (SELECT COUNT(*) 
@@ -194,13 +194,14 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
                      AND MONTH(created_at) = MONTH(CURRENT_DATE)
                      AND YEAR(created_at) = YEAR(CURRENT_DATE)) AS TotalMonthlyOperations,
 
-                    -- Total credit (sum of balances)
-                    (SELECT COALESCE(SUM(balance), 0) 
-                     FROM bank_account 
-                     WHERE user_id = @UserId) AS TotalCredit,
+                    -- Total credit added
+                    (SELECT COALESCE(SUM(amount), 0) 
+                     FROM balance_record br
+                     JOIN bank_account ba ON br.account_id = ba.id
+                     WHERE br.type = 'credit' AND ba.user_id = @UserId) AS TotalCredit
 
                     -- Total amount of money added in the current year
-                    (SELECT COALESCE(SUM(amount), 0) 
+                    (SELECT COALESCE(SUM(CAST(amount AS DECIMAL(15, 2))), 0) 
                      FROM balance_record br
                      JOIN bank_account ba ON br.account_id = ba.id
                      WHERE ba.user_id = @UserId 
