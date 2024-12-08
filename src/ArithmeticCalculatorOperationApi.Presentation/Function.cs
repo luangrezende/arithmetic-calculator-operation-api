@@ -84,7 +84,7 @@ public class Function
             HttpResponseException httpEx => ResponseHelper.BuildResponse(httpEx.StatusCode, new { error = httpEx.Message }),
             InvalidOperationException invalidEx => ResponseHelper.BuildResponse(HttpStatusCode.BadRequest, new { error = invalidEx.Message }),
             SecurityTokenExpiredException => ResponseHelper.BuildResponse(HttpStatusCode.Unauthorized, new { error = ApiErrorMessages.TokenExpired }),
-            SecurityTokenMalformedException => ResponseHelper.BuildResponse(HttpStatusCode.BadRequest, new { error = ApiErrorMessages.InvalidToken }),
+            SecurityTokenMalformedException => ResponseHelper.BuildResponse(HttpStatusCode.Unauthorized, new { error = ApiErrorMessages.InvalidToken }),
             ArgumentException argEx => ResponseHelper.BuildResponse(HttpStatusCode.BadRequest, new { error = argEx.Message }),
             _ => ResponseHelper.BuildResponse(HttpStatusCode.InternalServerError, new { error = ApiErrorMessages.InternalServerError }),
         };

@@ -17,6 +17,7 @@
         public const string OperationAdded = "Operation was successfully added.";
         public const string AddBalanceSuccess = "Balance added successfully.";
         public const string InvalidAmount = "The amount is invalid.";
+        public const string InvalidExpression = "The provided expression is not a valid arithmetic operation.";
         public const string ExceededMaximumAmount = "The amount exceeds the maximum allowed.";
         public const string NoOperationsFound = "No operations were found.";
         public const string ConnectionStringNotSet = "Connection string is not set.";

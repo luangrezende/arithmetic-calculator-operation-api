@@ -190,18 +190,17 @@ namespace ArithmeticCalculatorOperationApi.Presentation.Handlers
 
         private (Guid, string) ValidateTokenAndReturnWithUserIdOrThrow(APIGatewayProxyRequest request)
         {
-            var jwtTokenValidator = _serviceProvider.GetRequiredService<JwtTokenValidator>();
-            if (!request.Headers.TryGetValue("Authorization", out var authorization) || string.IsNullOrWhiteSpace(authorization))
-                throw new HttpResponseException(HttpStatusCode.Unauthorized, ApiErrorMessages.InvalidToken);
-
-            var token = authorization.Replace("Bearer ", "", StringComparison.OrdinalIgnoreCase);
-            if (!jwtTokenValidator.ValidateToken(token, out var userId))
-                throw new HttpResponseException(HttpStatusCode.Unauthorized, ApiErrorMessages.InvalidToken);
-
+            var (userId, token) = ExtractTokenAndValidate(request);
             return (userId, token);
         }
 
         private Guid ValidateTokenAndReturnUserId(APIGatewayProxyRequest request)
+        {
+            var (userId, _) = ExtractTokenAndValidate(request);
+            return userId;
+        }
+
+        private (Guid, string) ExtractTokenAndValidate(APIGatewayProxyRequest request)
         {
             var jwtTokenValidator = _serviceProvider.GetRequiredService<JwtTokenValidator>();
 
@@ -213,7 +212,7 @@ namespace ArithmeticCalculatorOperationApi.Presentation.Handlers
             if (!jwtTokenValidator.ValidateToken(token, out var userId))
                 throw new HttpResponseException(HttpStatusCode.Unauthorized, ApiErrorMessages.InvalidToken);
 
-            return userId;
+            return (userId, token);
         }
     }
 }

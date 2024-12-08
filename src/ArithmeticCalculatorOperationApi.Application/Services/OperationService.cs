@@ -1,7 +1,10 @@
-﻿using ArithmeticCalculatorOperationApi.Application.DTOs;
+﻿using ArithmeticCalculatorOperationApi.Application.Constants;
+using ArithmeticCalculatorOperationApi.Application.DTOs;
+using ArithmeticCalculatorOperationApi.Application.Helpers;
 using ArithmeticCalculatorOperationApi.Application.Interfaces.Repositories;
 using ArithmeticCalculatorOperationApi.Application.Interfaces.Services;
 using ArithmeticCalculatorOperationApi.Application.Models.Response;
+using ArithmeticCalculatorOperationApi.Domain.Configurations;
 using ArithmeticCalculatorOperationApi.Domain.Entities;
 using NCalc;
 using Polly;
@@ -25,20 +28,28 @@ public class OperationService : IOperationService
 
     public async Task<string> CalculateOperation(string expression)
     {
+        if (string.IsNullOrWhiteSpace(expression))
+            throw new ArgumentException(ApiErrorMessages.InvalidExpression);
+
         try
         {
-            if (expression.Equals("random_string"))
+            if (expression.Equals("random_string", StringComparison.OrdinalIgnoreCase))
                 return await _randomStringService.GenerateRandomStringAsync();
 
             var preparedExpression = PrepareExpression(expression);
 
             Expression expressionResult = new(preparedExpression);
 
-            return expressionResult.Evaluate()!.ToString()!;
+            var result = expressionResult.Evaluate()?.ToString();
+
+            if (result is not null && result.IsNumeric())
+                return result;
+
+            throw new ArgumentException(ApiErrorMessages.InvalidExpression);
         }
         catch
         {
-            throw new ArgumentException("The provided expression is not a valid arithmetic operation.");
+            throw new ArgumentException(ApiErrorMessages.InvalidExpression);
         }
     }
 
@@ -50,7 +61,7 @@ public class OperationService : IOperationService
             operators.Add("random_string");
 
         if (operators.Count == 0)
-            throw new ArgumentException("The provided expression is not a valid arithmetic operation.");
+            throw new ArgumentException(ApiErrorMessages.InvalidExpression);
 
         var operationTypes = await _operationTypeRepository.GetByOperatorCodesAsync([.. operators]);
 
@@ -157,7 +168,7 @@ public class OperationService : IOperationService
 
     public async Task<bool> SoftDeleteOperationRecordsAsync(Guid userId, List<Guid> recordIds)
     {
-        if (recordIds == null || !recordIds.Any())
+        if (recordIds == null || recordIds.Count == 0)
             return false;
 
         return await _operationRepository.SoftDeleteOperationRecordsAsync(userId, recordIds);
@@ -175,7 +186,8 @@ public class OperationService : IOperationService
             TotalAnnualCashAdded = result.TotalAnnualCashAdded,
             TotalPlatformOperations = result.TotalPlatformOperations,
             TotalPlatformCashSpent = result.TotalPlatformCashSpent,
-            TotalPlatformCashAdded = result.TotalPlatformCashAdded
+            TotalPlatformCashAdded = result.TotalPlatformCashAdded,
+            AnnualTarget = Convert.ToDecimal(OperationConfiguration.AnnualOperationCashTarget)
         };
     }
 }
