@@ -182,24 +182,24 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
         {
             const string query = @"
                 SELECT 
-                    -- Total de operações do usuário
+                    -- Total number of operations for the user
                     (SELECT COUNT(*) 
                      FROM operation_record 
                      WHERE user_id = @UserId AND deleted_at IS NULL) AS TotalOperations,
-             
-                    -- Total de operações no mês atual
+ 
+                    -- Total number of operations in the current month
                     (SELECT COUNT(*) 
                      FROM operation_record 
                      WHERE user_id = @UserId AND deleted_at IS NULL
                      AND MONTH(created_at) = MONTH(CURRENT_DATE)
                      AND YEAR(created_at) = YEAR(CURRENT_DATE)) AS TotalMonthlyOperations,
 
-                    -- Total de crédito (soma dos saldos)
+                    -- Total credit (sum of balances)
                     (SELECT COALESCE(SUM(balance), 0) 
                      FROM bank_account 
                      WHERE user_id = @UserId) AS TotalCredit,
 
-                    -- Total de dinheiro adicionado no ano atual
+                    -- Total amount of money added in the current year
                     (SELECT COALESCE(SUM(amount), 0) 
                      FROM balance_record br
                      JOIN bank_account ba ON br.account_id = ba.id
@@ -207,22 +207,23 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
                      AND br.type = 'credit'
                      AND YEAR(br.created_at) = YEAR(CURRENT_DATE)) AS TotalAnnualCashAdded,
 
-                    -- Total de operações na plataforma
+                    -- Total number of operations on the platform
                     (SELECT COUNT(*) 
                      FROM operation_record 
                      WHERE deleted_at IS NULL) AS TotalPlatformOperations,
 
-                    -- Total de dinheiro gasto na plataforma
+                    -- Total amount of money spent on the platform
                     (SELECT COALESCE(SUM(cost), 0) 
                      FROM operation_record 
                      WHERE deleted_at IS NULL) AS TotalPlatformCashSpent,
 
-                    -- Total de dinheiro adicionado na plataforma
+                    -- Total amount of money added to the platform
                     (SELECT COALESCE(SUM(amount), 0) 
                      FROM balance_record br
                      JOIN bank_account ba ON br.account_id = ba.id
                      WHERE br.type = 'credit') AS TotalPlatformCashAdded
             ";
+
 
             var parameters = new[]
             {
@@ -243,7 +244,7 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
                     TotalOperations = reader.GetInt32("TotalOperations"),
                     TotalMonthlyOperations = reader.GetInt32("TotalMonthlyOperations"),
                     TotalCredit = reader.GetDecimal("TotalCredit"),
-                    TotalAnnualCashAdded = reader.GetInt32("TotalAnnualCashAdded"),
+                    TotalAnnualCashAdded = reader.GetDecimal("TotalAnnualCashAdded"),
                     TotalPlatformOperations = reader.GetInt32("TotalPlatformOperations"),
                     TotalPlatformCashSpent = reader.GetDecimal("TotalPlatformCashSpent"),
                     TotalPlatformCashAdded = reader.GetDecimal("TotalPlatformCashAdded")

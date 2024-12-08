@@ -23,6 +23,9 @@ namespace ArithmeticCalculatorOperationApi.Application.Models.Response
         public decimal TotalPlatformCashSpent { get; set; }
 
         [JsonPropertyName("totalPlatformCashAdded")]
-        public decimal TotalPlatformCashAdded { get; set; }
+        public decimal TotalPlatformCashAdded { get; set; } 
+        
+        [JsonPropertyName("annualTarget")]
+        public decimal AnnualTarget { get; set; }
     }
 }
