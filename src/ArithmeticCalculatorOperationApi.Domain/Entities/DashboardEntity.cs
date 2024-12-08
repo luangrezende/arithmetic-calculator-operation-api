@@ -8,7 +8,7 @@
 
         public decimal TotalCredit { get; set; }
 
-        public int TotalAnnualCashAdded { get; set; }
+        public decimal TotalAnnualCashAdded { get; set; }
 
         public int TotalPlatformOperations { get; set; }
 

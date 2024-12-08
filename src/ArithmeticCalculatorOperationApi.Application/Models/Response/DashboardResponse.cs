@@ -14,7 +14,7 @@ namespace ArithmeticCalculatorOperationApi.Application.Models.Response
         public decimal TotalCredit { get; set; }
 
         [JsonPropertyName("totalAnnualCashAdded")]
-        public int TotalAnnualCashAdded { get; set; }
+        public decimal TotalAnnualCashAdded { get; set; }
 
         [JsonPropertyName("totalPlatformOperations")]
         public int TotalPlatformOperations { get; set; }
