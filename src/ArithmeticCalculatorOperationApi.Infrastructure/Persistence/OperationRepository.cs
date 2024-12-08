@@ -198,7 +198,7 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
                     (SELECT COALESCE(SUM(amount), 0) 
                      FROM balance_record br
                      JOIN bank_account ba ON br.account_id = ba.id
-                     WHERE br.type = 'credit' AND ba.user_id = @UserId) AS TotalCredit
+                     WHERE br.type = 'credit' AND ba.user_id = @UserId) AS TotalCredit,
 
                     -- Total amount of money added in the current year
                     (SELECT COALESCE(SUM(CAST(amount AS DECIMAL(15, 2))), 0) 
