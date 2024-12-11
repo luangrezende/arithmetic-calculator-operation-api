@@ -27,13 +27,11 @@
 
     -- Total number of operations on the platform
     (SELECT COUNT(*) 
-        FROM operation_record 
-        WHERE deleted_at IS NULL) AS TotalPlatformOperations,
+        FROM operation_record) AS TotalPlatformOperations,
 
     -- Total amount of money spent on the platform
     (SELECT COALESCE(SUM(cost), 0) 
-        FROM operation_record 
-        WHERE deleted_at IS NULL) AS TotalPlatformCashSpent,
+        FROM operation_record) AS TotalPlatformCashSpent,
 
     -- Total amount of money added to the platform
     (SELECT COALESCE(SUM(amount), 0) 

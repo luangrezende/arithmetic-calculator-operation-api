@@ -116,7 +116,7 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Persistence.Repositori
         public async Task<int> GetTotalCountAsync(Guid userId, string query)
         {
             var sql = BuildQueryWithFilters(query);
-            sql = "SELECT COUNT(*) " + sql.Substring(sql.IndexOf("FROM"));
+            sql = string.Concat("SELECT COUNT(*) ", sql.AsSpan(sql.IndexOf("FROM")));
 
             var parameters = new[]
             {
@@ -125,7 +125,7 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Persistence.Repositori
             };
 
             using var connection = await _dbConnectionService.CreateConnectionAsync();
-            using var cmd = new MySqlCommand(query, connection);
+            using var cmd = new MySqlCommand(sql, connection);
 
             cmd.Parameters.AddRange(parameters);
 
