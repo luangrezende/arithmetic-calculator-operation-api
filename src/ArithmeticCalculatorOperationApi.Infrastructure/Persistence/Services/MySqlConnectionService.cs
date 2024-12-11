@@ -3,7 +3,7 @@ using MySql.Data.MySqlClient;
 using System.Data.Common;
 using System.Data;
 
-namespace ArithmeticCalculatorOperationApi.Infrastructure.Persistence
+namespace ArithmeticCalculatorOperationApi.Infrastructure.Persistence.Services
 {
     public class MySqlConnectionService : IDbConnectionService
     {
@@ -27,7 +27,7 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Persistence
             MySqlConnection connection,
             MySqlTransaction? transaction = null)
         {
-            if (connection.State != System.Data.ConnectionState.Open)
+            if (connection.State != ConnectionState.Open)
             {
                 await connection.OpenAsync();
             }
@@ -48,7 +48,7 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Persistence
             MySqlConnection connection,
             MySqlTransaction? transaction = null)
         {
-            if (connection.State != System.Data.ConnectionState.Open)
+            if (connection.State != ConnectionState.Open)
             {
                 await connection.OpenAsync();
             }

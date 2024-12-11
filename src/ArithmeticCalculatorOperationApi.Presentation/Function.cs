@@ -7,8 +7,8 @@ using ArithmeticCalculatorOperationApi.Application.Helpers;
 using ArithmeticCalculatorOperationApi.Application.Interfaces.Repositories;
 using ArithmeticCalculatorOperationApi.Application.Interfaces.Services;
 using ArithmeticCalculatorOperationApi.Application.Services;
-using ArithmeticCalculatorOperationApi.Infrastructure.Persistence;
-using ArithmeticCalculatorOperationApi.Infrastructure.Repositories;
+using ArithmeticCalculatorOperationApi.Infrastructure.Persistence.Repositories;
+using ArithmeticCalculatorOperationApi.Infrastructure.Persistence.Services;
 using ArithmeticCalculatorOperationApi.Infrastructure.Security;
 using ArithmeticCalculatorOperationApi.Presentation.Handlers;
 using Microsoft.Extensions.DependencyInjection;
@@ -81,7 +81,7 @@ public class Function
 
         return ex switch
         {
-            HttpResponseException httpEx => ResponseHelper.BuildResponse(httpEx.StatusCode, new { error = httpEx.Message }),
+            HttpResponseExceptionHelper httpEx => ResponseHelper.BuildResponse(httpEx.StatusCode, new { error = httpEx.Message }),
             InvalidOperationException invalidEx => ResponseHelper.BuildResponse(HttpStatusCode.BadRequest, new { error = invalidEx.Message }),
             SecurityTokenExpiredException => ResponseHelper.BuildResponse(HttpStatusCode.Unauthorized, new { error = ApiErrorMessages.TokenExpired }),
             SecurityTokenMalformedException => ResponseHelper.BuildResponse(HttpStatusCode.Unauthorized, new { error = ApiErrorMessages.InvalidToken }),

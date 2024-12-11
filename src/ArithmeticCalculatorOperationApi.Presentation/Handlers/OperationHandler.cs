@@ -205,12 +205,12 @@ namespace ArithmeticCalculatorOperationApi.Presentation.Handlers
             var jwtTokenValidator = _serviceProvider.GetRequiredService<JwtTokenValidator>();
 
             if (!request.Headers.TryGetValue("Authorization", out var authorization) || string.IsNullOrWhiteSpace(authorization))
-                throw new HttpResponseException(HttpStatusCode.Unauthorized, ApiErrorMessages.InvalidToken);
+                throw new HttpResponseExceptionHelper(HttpStatusCode.Unauthorized, ApiErrorMessages.InvalidToken);
 
             var token = authorization.Replace("Bearer ", "", StringComparison.OrdinalIgnoreCase);
 
             if (!jwtTokenValidator.ValidateToken(token, out var userId))
-                throw new HttpResponseException(HttpStatusCode.Unauthorized, ApiErrorMessages.InvalidToken);
+                throw new HttpResponseExceptionHelper(HttpStatusCode.Unauthorized, ApiErrorMessages.InvalidToken);
 
             return (userId, token);
         }

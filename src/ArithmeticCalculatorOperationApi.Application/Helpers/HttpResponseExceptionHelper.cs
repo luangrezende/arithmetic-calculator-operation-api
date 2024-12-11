@@ -2,13 +2,13 @@
 
 namespace ArithmeticCalculatorOperationApi.Application.Helpers
 {
-    public class HttpResponseException : Exception
+    public class HttpResponseExceptionHelper : Exception
     {
         public HttpStatusCode StatusCode { get; }
 
         public string Message { get; }
 
-        public HttpResponseException(HttpStatusCode statusCode, string message)
+        public HttpResponseExceptionHelper(HttpStatusCode statusCode, string message)
         {
             StatusCode = statusCode;
             Message = message;
