@@ -22,7 +22,7 @@ namespace ArithmeticCalculatorOperationApi.Application.Helpers
         public static T ParseRequestOrThrow<T>(string requestBody)
         {
             if (!RequestParserHelper.TryParseRequest<T>(requestBody, out var parsedRequest, out var errorMessage))
-                throw new HttpResponseException(HttpStatusCode.BadRequest, errorMessage!);
+                throw new HttpResponseExceptionHelper(HttpStatusCode.BadRequest, errorMessage!);
 
             return parsedRequest!;
         }

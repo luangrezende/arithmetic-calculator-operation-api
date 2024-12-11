@@ -1,18 +1,18 @@
 ﻿using ArithmeticCalculatorOperationApi.Application.Interfaces.Repositories;
+using ArithmeticCalculatorOperationApi.Application.Interfaces.Services;
 using ArithmeticCalculatorOperationApi.Domain.Entities;
 using MySql.Data.MySqlClient;
 using System.Data;
 
-namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
+namespace ArithmeticCalculatorOperationApi.Infrastructure.Persistence.Repositories
 {
     public class OperationTypeRepository : IOperationTypeRepository
     {
-        private readonly string _connectionString;
+        private readonly IDbConnectionService _dbConnectionService;
 
-        public OperationTypeRepository()
+        public OperationTypeRepository(IDbConnectionService dbConnectionService)
         {
-            _connectionString = Environment.GetEnvironmentVariable("MYSQL_CONNECTION_STRING")
-                                ?? throw new InvalidOperationException("Connection string is not set.");
+            _dbConnectionService = dbConnectionService;
         }
 
         public async Task<List<OperationTypeEntity>> GetAllAsync()
@@ -23,9 +23,7 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
 
             var operationTypes = new List<OperationTypeEntity>();
 
-            using var connection = new MySqlConnection(_connectionString);
-            await connection.OpenAsync();
-
+            using var connection = await _dbConnectionService.CreateConnectionAsync();
             using var cmd = new MySqlCommand(query, connection);
 
             using var reader = await cmd.ExecuteReaderAsync();
@@ -53,10 +51,9 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
                 FROM operation_type ot
                 WHERE ot.id = @OperationTypeId";
 
-            using var connection = new MySqlConnection(_connectionString);
-            await connection.OpenAsync();
-
+            using var connection = await _dbConnectionService.CreateConnectionAsync();
             using var cmd = new MySqlCommand(query, connection);
+
             cmd.Parameters.Add(new MySqlParameter("@OperationTypeId", MySqlDbType.Guid)
             {
                 Value = id
@@ -89,7 +86,8 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
                 WHERE ot.operator_code IN ({0})";
 
             var parameters = new List<MySqlParameter>();
-            var operatorPlaceholders = string.Join(",", operators.Select((op, index) => {
+            var operatorPlaceholders = string.Join(",", operators.Select((op, index) =>
+            {
                 var paramName = $"@Operator{index}";
                 parameters.Add(new MySqlParameter(paramName, MySqlDbType.VarChar) { Value = op });
                 return paramName;
@@ -99,10 +97,9 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
 
             var operationTypes = new List<OperationTypeEntity>();
 
-            using var connection = new MySqlConnection(_connectionString);
-            await connection.OpenAsync();
-
+            using var connection = await _dbConnectionService.CreateConnectionAsync();
             using var cmd = new MySqlCommand(query, connection);
+
             cmd.Parameters.AddRange(parameters.ToArray());
 
             using var reader = await cmd.ExecuteReaderAsync();

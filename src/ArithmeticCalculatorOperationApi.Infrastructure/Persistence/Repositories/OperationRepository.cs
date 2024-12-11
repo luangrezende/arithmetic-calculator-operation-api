@@ -1,26 +1,25 @@
 ﻿using ArithmeticCalculatorOperationApi.Application.Interfaces.Repositories;
+using ArithmeticCalculatorOperationApi.Application.Interfaces.Services;
 using ArithmeticCalculatorOperationApi.Domain.Entities;
 using MySql.Data.MySqlClient;
 using System.Data;
 
-namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
+namespace ArithmeticCalculatorOperationApi.Infrastructure.Persistence.Repositories
 {
     public class OperationRepository : IOperationRepository
     {
-        private readonly string _connectionString;
+        private readonly IDbConnectionService _dbConnectionService;
 
-        public OperationRepository()
+        public OperationRepository(IDbConnectionService dbConnectionService)
         {
-            _connectionString = Environment.GetEnvironmentVariable("MYSQL_CONNECTION_STRING")
-                                ?? throw new InvalidOperationException("Connection string is not set.");
+            _dbConnectionService = dbConnectionService;
         }
 
         private async Task<List<OperationRecordEntity>> ExecuteOperationQueryAsync(string sql, MySqlParameter[] parameters)
         {
-            using var connection = new MySqlConnection(_connectionString);
-            await connection.OpenAsync();
-
+            using var connection = await _dbConnectionService.CreateConnectionAsync();
             using var cmd = new MySqlCommand(sql, connection);
+
             cmd.Parameters.AddRange(parameters);
 
             using var reader = await cmd.ExecuteReaderAsync();
@@ -89,10 +88,9 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
 
             string sql = $"UPDATE operation_record SET deleted_at = CURRENT_TIMESTAMP WHERE user_id = @UserId AND id IN ({string.Join(", ", recordPlaceholders)}) AND deleted_at IS NULL";
 
-            using var connection = new MySqlConnection(_connectionString);
-            await connection.OpenAsync();
-
+            using var connection = await _dbConnectionService.CreateConnectionAsync();
             using var cmd = new MySqlCommand(sql, connection);
+
             cmd.Parameters.AddRange(parameters.ToArray());
 
             var rowsAffected = await cmd.ExecuteNonQueryAsync();
@@ -126,10 +124,9 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
                 new MySqlParameter("@Query", MySqlDbType.Text) { Value = query }
             };
 
-            using var connection = new MySqlConnection(_connectionString);
-            await connection.OpenAsync();
+            using var connection = await _dbConnectionService.CreateConnectionAsync();
+            using var cmd = new MySqlCommand(query, connection);
 
-            using var cmd = new MySqlCommand(sql, connection);
             cmd.Parameters.AddRange(parameters);
 
             var result = await cmd.ExecuteScalarAsync();
@@ -168,10 +165,9 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
                 new MySqlParameter("@CreatedAt", MySqlDbType.Timestamp) { Value = operationRecord.CreatedAt }
             };
 
-            using var connection = new MySqlConnection(_connectionString);
-            await connection.OpenAsync();
-
+            using var connection = await _dbConnectionService.CreateConnectionAsync();
             using var cmd = new MySqlCommand(query, connection);
+
             cmd.Parameters.AddRange(parameters);
 
             var rowsAffected = await cmd.ExecuteNonQueryAsync();
@@ -210,13 +206,11 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
 
                     -- Total number of operations on the platform
                     (SELECT COUNT(*) 
-                     FROM operation_record 
-                     WHERE deleted_at IS NULL) AS TotalPlatformOperations,
+                     FROM operation_record) AS TotalPlatformOperations,
 
                     -- Total amount of money spent on the platform
                     (SELECT COALESCE(SUM(cost), 0) 
-                     FROM operation_record 
-                     WHERE deleted_at IS NULL) AS TotalPlatformCashSpent,
+                     FROM operation_record) AS TotalPlatformCashSpent,
 
                     -- Total amount of money added to the platform
                     (SELECT COALESCE(SUM(amount), 0) 
@@ -231,10 +225,9 @@ namespace ArithmeticCalculatorOperationApi.Infrastructure.Repositories
                 new MySqlParameter("@UserId", MySqlDbType.Guid) { Value = userId }
             };
 
-            using var connection = new MySqlConnection(_connectionString);
-            await connection.OpenAsync();
-
+            using var connection = await _dbConnectionService.CreateConnectionAsync();
             using var cmd = new MySqlCommand(query, connection);
+
             cmd.Parameters.AddRange(parameters);
 
             using var reader = await cmd.ExecuteReaderAsync();
