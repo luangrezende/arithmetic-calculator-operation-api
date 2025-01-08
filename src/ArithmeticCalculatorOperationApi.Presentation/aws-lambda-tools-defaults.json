@@ -1,0 +1,13 @@
+{
+  "profile": "default",
+  "region": "us-east-1",
+  "configuration": "Release",
+  "framework": "net8.0",
+  "function-runtime": "dotnet8",
+  "function-memory-size": 1024,
+  "function-timeout": 60,
+  "function-handler": "ArithmeticCalculatorOperationApi.Presentation::ArithmeticCalculatorOperationApi.Presentation.Function::FunctionHandler",
+  "function-name": "ArithmeticCalculatorOperationApi",
+  "function-description": "Lambda function for Arithmetic Calculator User API",
+  "package-type": "Zip"
+}

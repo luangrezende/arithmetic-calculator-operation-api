@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Persistence\Scripts\GetDashboardData.sql" />
+    <None Remove="Persistence\Scripts\OperationWithFilters.sql" />
+    <None Remove="Persistence\Scripts\SaveRecord.sql" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Persistence\Scripts\GetDashboardData.sql" />
+    <EmbeddedResource Include="Persistence\Scripts\OperationWithFilters.sql" />
+    <EmbeddedResource Include="Persistence\Scripts\SaveRecord.sql" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.3.0" />
+    <PackageReference Include="MySql.Data" Version="9.1.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.3.0" />
+    <PackageReference Include="System.Text.Json" Version="9.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ArithmeticCalculatorOperationApi.Application\ArithmeticCalculatorOperationApi.Application.csproj" />
+  </ItemGroup>
+
+</Project>
