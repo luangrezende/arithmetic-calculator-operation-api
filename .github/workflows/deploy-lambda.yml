@@ -1,64 +1,95 @@
-name: Deploy Lambda to AWS
+name: Deploy to AWS Lambda
 
 on:
-  push:
-    branches:
-      - main
+  # push:
+  #   branches:
+  #     - master
+  workflow_dispatch:
+
+env:
+  AWS_REGION: us-east-1
+  DOTNET_VERSION: '8.0'
 
 jobs:
   deploy:
+    name: Build and Deploy to Lambda
     runs-on: ubuntu-latest
-
+    
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: 8.0
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Install Amazon Lambda Tools
-        run: dotnet tool install -g Amazon.Lambda.Tools
+    - name: Install AWS Lambda Tools
+      run: dotnet tool install -g Amazon.Lambda.Tools
 
-      - name: Add .NET Tools to PATH
-        run: echo "${HOME}/.dotnet/tools" >> $GITHUB_PATH
+    - name: Add .NET Tools to PATH
+      run: echo "${HOME}/.dotnet/tools" >> $GITHUB_PATH
 
-      - name: Install Dependencies
-        working-directory: src/ArithmeticCalculatorOperationApi.Presentation
-        run: dotnet restore
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
 
-      - name: Create output directory
-        run: mkdir -p src/ArithmeticCalculatorOperationApi.Presentation/output
+    - name: Restore dependencies
+      run: dotnet restore
 
-      - name: Build and Package Lambda
-        working-directory: src/ArithmeticCalculatorOperationApi.Presentation
-        run: dotnet lambda package --configuration Release --output-package /home/runner/work/${{ github.repository }}/src/ArithmeticCalculatorOperationApi.Presentation/output/deployment.zip
+    - name: Build solution
+      run: dotnet build --configuration Release --no-restore
 
-      - name: Configure AWS CLI
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+    - name: Run Unit Tests
+      env:
+        JWT_SECRET_KEY: "test-secret-key-for-unit-tests-only"
+        MYSQL_CONNECTION_STRING: "Server=localhost;Database=test;User=test;Password=test;"
+      run: |
+        echo "Running unit tests..."
+        dotnet test --configuration Release --no-build --verbosity normal --logger trx --results-directory ./test-results
+        echo "All tests passed successfully!"
 
-      - name: Deploy Lambda Function
-        run: |
-          if aws lambda get-function --function-name ArithmeticCalculatorOperationApi > /dev/null 2>&1; then
-            echo "Updating Lambda function handler and configuration"
-            aws lambda update-function-configuration \
-              --function-name ArithmeticCalculatorOperationApi \
-              --handler ArithmeticCalculatorOperationApi.Presentation::ArithmeticCalculatorOperationApi.Presentation.Function::FunctionHandler
-            echo "Updating Lambda function code"
-            aws lambda update-function-code \
-              --function-name ArithmeticCalculatorOperationApi \
-              --zip-file fileb:///home/runner/work/${{ github.repository }}/src/ArithmeticCalculatorOperationApi.Presentation/output/deployment.zip
-          else
-            echo "Creating Lambda function"
-            aws lambda create-function \
-              --function-name ArithmeticCalculatorOperationApi \
-              --runtime dotnet8 \
-              --role arn:aws:iam::565393042425:role/ArithmeticCalculatorUserLambdaRole \
-              --handler ArithmeticCalculatorOperationApi.Presentation::ArithmeticCalculatorOperationApi.Presentation.Function::FunctionHandler \
-              --zip-file fileb:///home/runner/work/${{ github.repository }}/src/ArithmeticCalculatorOperationApi.Presentation/output/deployment.zip
-          fi
+    - name: Upload Test Results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results
+        path: ./test-results/*.trx
+
+    - name: Build and Package Lambda
+      working-directory: src/ArithmeticCalculatorOperationApi.Presentation
+      run: dotnet lambda package --configuration Release --output-package deployment-package.zip
+
+    - name: Deploy to Lambda
+      run: |
+        if aws lambda get-function --function-name ArithmeticCalculatorOperationApi > /dev/null 2>&1; then
+          echo "Updating Lambda function code"
+          aws lambda update-function-code \
+            --function-name ArithmeticCalculatorOperationApi \
+            --zip-file fileb://src/ArithmeticCalculatorOperationApi.Presentation/deployment-package.zip
+          
+          echo "Waiting for function update to complete..."
+          aws lambda wait function-updated \
+            --function-name ArithmeticCalculatorOperationApi
+          
+          echo "Updating Lambda function configuration"
+          aws lambda update-function-configuration \
+            --function-name ArithmeticCalculatorOperationApi \
+            --timeout 60 \
+            --memory-size 1024 \
+            --environment Variables="{MYSQL_CONNECTION_STRING=${{ secrets.MYSQL_CONNECTION_STRING }},JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}}"
+        else
+          echo "Creating Lambda function"
+          aws lambda create-function \
+            --function-name ArithmeticCalculatorOperationApi \
+            --runtime dotnet8 \
+            --role ${{ secrets.LAMBDA_EXECUTION_ROLE_ARN }} \
+            --handler ArithmeticCalculatorOperationApi.Presentation::ArithmeticCalculatorOperationApi.Presentation.Function::FunctionHandler \
+            --zip-file fileb://src/ArithmeticCalculatorOperationApi.Presentation/deployment-package.zip \
+            --timeout 60 \
+            --memory-size 1024 \
+            --environment Variables="{MYSQL_CONNECTION_STRING=${{ secrets.MYSQL_CONNECTION_STRING }},JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}}"
+        fi
