@@ -1,10 +1,10 @@
-# Arithmetic Calculator Operation API
+# Arithmetic Calculator Operation API v1.0.0
 
 ![.NET 8](https://img.shields.io/badge/.NET-8.0-512BD4)
 ![AWS Lambda](https://img.shields.io/badge/AWS-Lambda-FF9900)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
-An API for arithmetic operations, developed using AWS Lambda and .NET 8.
+A microservice responsible for arithmetic operations within the Arithmetic Calculator ecosystem. Built on AWS Lambda with .NET 8.
 
 ## Features
 
@@ -42,17 +42,52 @@ This project follows Clean Architecture principles with a clear separation of co
    cd arithmetic-calculator-operation-api
    ```
 
-2. **Restore dependencies**
+2. **Set up environment variables**
+   ```bash
+   # Windows (PowerShell)
+   $env:MYSQL_CONNECTION_STRING="Server=localhost;Database=calculator;User=root;Password=password;"
+   $env:JWT_SECRET_KEY="your-jwt-secret-key"
+   $env:USER_DEBIT_API_URL="https://your-user-api-url/v1/user/account/balance"
+   $env:USER_PROFILE_API_URL="https://your-user-api-url/v1/user/profile"
+   $env:RANDOM_STRING_ENDPOINT="https://your-random-string-service-url"
+
+   # Linux/macOS
+   export MYSQL_CONNECTION_STRING="Server=localhost;Database=calculator;User=root;Password=password;"
+   export JWT_SECRET_KEY="your-jwt-secret-key"
+   export USER_DEBIT_API_URL="https://your-user-api-url/v1/user/account/balance"
+   export USER_PROFILE_API_URL="https://your-user-api-url/v1/user/profile"
+   export RANDOM_STRING_ENDPOINT="https://your-random-string-service-url"
+   ```
+
+3. **Restore dependencies**
    ```bash
    dotnet restore
    ```
 
-3. **Run locally using Lambda Test Tool**
+4. **Run locally using Lambda Test Tool**
    ```bash
    dotnet lambda run-server
    ```
 
 The API will be accessible at `http://localhost:5000`.
+
+### Docker Development
+
+1. **Build the Docker image**
+   ```bash
+   docker build -t arithmetic-calculator-operation-api .
+   ```
+
+2. **Run the container**
+   ```bash
+   docker run -p 5000:5000 \
+     -e MYSQL_CONNECTION_STRING="Server=host.docker.internal;Database=calculator;User=root;Password=password;" \
+     -e JWT_SECRET_KEY="your-jwt-secret-key" \
+     -e USER_DEBIT_API_URL="https://your-user-api-url/v1/user/account/balance" \
+     -e USER_PROFILE_API_URL="https://your-user-api-url/v1/user/profile" \
+     -e RANDOM_STRING_ENDPOINT="https://your-random-string-service-url" \
+     arithmetic-calculator-operation-api
+   ```
 
 ### Docker Development
 
@@ -93,12 +128,14 @@ This project includes a CI/CD pipeline using GitHub Actions. To set up:
 
 ## API Endpoints
 
+
 ### Operations
 
-- **POST /v1/operations/add** - Perform addition
-- **POST /v1/operations/subtract** - Perform subtraction
-- **POST /v1/operations/multiply** - Perform multiplication
-- **POST /v1/operations/divide** - Perform division
+- **GET /v1/operations/types** - List all operation types
+- **GET /v1/operations/records** - List paged operation records
+- **GET /v1/operations/dashboard** - Get dashboard data for the user
+- **POST /v1/operations/records** - Add a new operation record
+- **DELETE /v1/operations/records** - Soft delete operation records
 
 ## Testing
 
