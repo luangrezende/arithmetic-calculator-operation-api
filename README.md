@@ -1,127 +1,211 @@
+# Arithmetic Calculator Operation API v1.0.0
+
+🚀 We're excited to announce the first official release of the Arithmetic Calculator Operation API!
+
+## Overview
+
+This release delivers a complete serverless microservice for arithmetic operations within the Arithmetic Calculator ecosystem. Built with AWS Lambda and .NET 8, this API provides endpoints for performing basic arithmetic calculations in a scalable, serverless environment.
+
+## Key Features
+
+- ➕ **Arithmetic Operations**
+  - Addition, subtraction, multiplication, and division endpoints
+  - Input validation and error handling
+
+- 🔒 **Security**
+  - Designed for secure, stateless operation
+  - Ready for integration with authentication/authorization layers
+
+- 🏗️ **Architecture**
+  - Clean Architecture design with separation of concerns
+  - Fully serverless implementation with AWS Lambda
+  - Containerized deployment options with Docker
+
+## Technical Details
+
+- Built on **.NET 8**
+- Implements **Clean Architecture** principles
+- **AWS Lambda** serverless deployment
+- **CI/CD** pipeline with GitHub Actions
+
+## Getting Started
+
+Check the [README.md](./README.md) for detailed setup instructions, including:
+
+- Local development setup
+- Docker deployment
+- AWS Lambda deployment
+- Environment configuration
+
+## API Endpoints
+
+### Operations
+- `POST /v1/operations/add` - Perform addition
+- `POST /v1/operations/subtract` - Perform subtraction
+- `POST /v1/operations/multiply` - Perform multiplication
+- `POST /v1/operations/divide` - Perform division
+
+## Breaking Changes
+
+None (initial release)
+
+## Future Plans
+
+- Support for advanced operations (e.g., square root, exponentiation)
+- User authentication and authorization integration
+- Operation history and logging
+- Performance optimizations
+- Multi-language support
+
+---
+
 # Arithmetic Calculator Operation API
 
-This is an API for arithmetic operations, developed using AWS Lambda and .NET 8.
+![.NET 8](https://img.shields.io/badge/.NET-8.0-512BD4)
+![AWS Lambda](https://img.shields.io/badge/AWS-Lambda-FF9900)
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+
+An API for arithmetic operations, developed using AWS Lambda and .NET 8.
+
+## Features
+
+- **Arithmetic Operations**: Perform addition, subtraction, multiplication, and division
+- **Serverless Architecture**: Deployed as AWS Lambda functions
+
+## Architecture
+
+This project follows Clean Architecture principles with a clear separation of concerns:
+
+```
+├── Domain         - Core business logic and entities
+├── Application    - Use cases, DTOs and service interfaces
+├── Infrastructure - External concerns (persistence, security)
+└── Presentation   - API endpoints and request handling
+```
 
 ## Prerequisites
 
-Ensure the following software is installed on your machine:
+- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) (configured)
+- [AWS Lambda Tools for .NET](https://github.com/aws/aws-extensions-for-dotnet-cli#aws-lambda-amazonlambdatools)
+  ```bash
+  dotnet tool install -g Amazon.Lambda.Tools
+  ```
+- [Docker](https://www.docker.com/products/docker-desktop) (optional, for containerized development)
 
-1. **.NET 8 SDK** - [Download](https://dotnet.microsoft.com/download/dotnet/8.0)
-2. **AWS CLI** - [Installation Instructions](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
-3. **AWS Lambda Tools for .NET** - Install using:
+## Getting Started
+
+### Local Development
+
+1. **Clone the repository**
    ```bash
-   dotnet tool install -g Amazon.Lambda.Tools
+   git clone https://github.com/luangrezende/arithmetic-calculator-operation-api.git
+   cd arithmetic-calculator-operation-api
    ```
-4. **Docker** - [Install Docker](https://www.docker.com/products/docker-desktop)
 
----
+2. **Restore dependencies**
+   ```bash
+   dotnet restore
+   ```
 
-## Running Locally
-
-### 1. Clone the Repository
-
-Clone the repository to your local machine:
-
-```bash
-git clone https://github.com/luangrezende/arithmetic-calculator-operation-api.git
-cd arithmetic-calculator-operation-api
-```
-
-### 2. Restore Dependencies
-
-Restore required NuGet packages:
-
-```bash
-dotnet restore
-```
-
-### 3. Run the API Locally
-
-Run the API locally using the AWS Lambda Test Tool:
-
-```bash
-dotnet lambda run-server
-```
+3. **Run locally using Lambda Test Tool**
+   ```bash
+   dotnet lambda run-server
+   ```
 
 The API will be accessible at `http://localhost:5000`.
 
----
+### Docker Development
 
-## Running with Docker
+1. **Build the Docker image**
+   ```bash
+   docker build -t arithmetic-calculator-operation-api .
+   ```
 
-### 1. Build the Docker Image
+2. **Run the container**
+   ```bash
+   docker run -p 5000:5000 arithmetic-calculator-operation-api
+   ```
 
-Build the Docker image using the following command:
+## Deployment to AWS Lambda
 
+### Manual Deployment
+
+1. **Package the application**
+   ```bash
+   dotnet lambda package --configuration Release
+   ```
+
+2. **Deploy to AWS Lambda**
+   ```bash
+   dotnet lambda deploy-function ArithmeticCalculatorOperationApi
+   ```
+
+### Automated Deployment with GitHub Actions
+
+This project includes a CI/CD pipeline using GitHub Actions. To set up:
+
+1. Add the following secrets to your GitHub repository:
+   - `AWS_ACCESS_KEY_ID`
+   - `AWS_SECRET_ACCESS_KEY`
+   - `LAMBDA_EXECUTION_ROLE_ARN`
+
+2. See [GitHub Actions Setup](docs/github-actions-setup.md) for detailed configuration.
+
+## API Endpoints
+
+### Operations
+
+- **POST /v1/operations/add** - Perform addition
+- **POST /v1/operations/subtract** - Perform subtraction
+- **POST /v1/operations/multiply** - Perform multiplication
+- **POST /v1/operations/divide** - Perform division
+
+## Testing
+
+Run the test suite with:
 ```bash
-docker build -t arithmetic-calculator-operation-api .
+cd tests
 ```
-
-### 2. Run the Docker Container
-
-Run the Docker container:
-
 ```bash
-docker run -p 5000:5000 arithmetic-calculator-operation-api
+dotnet test
 ```
 
-The API will now be available at `http://localhost:5000`.
-
----
-
-## Project Structure
-
-```
-├── src/
-│ ├── ArithmeticCalculatorOperationApi.Presentation/ # Main API project
-│ ├── ArithmeticCalculatorOperationApi.Application/ # Application layer (services, DTOs, use cases)
-│ ├── ArithmeticCalculatorOperationApi.Domain/ # Domain logic
-│ ├── ArithmeticCalculatorOperationApi.Infrastructure/ # Infrastructure logic
-├── tests/
-│ ├── ArithmeticCalculatorOperationApi.Domain.Tests/ # Unit tests
-├── .github/workflows/ # CI/CD workflows
-├── .gitignore
-├── ArithmeticCalculatorOperationApi.sln # Solution file
-└── README.md
-```
-
----
+The project includes unit tests for domain, application, and infrastructure layers.
 
 ## Configuration
 
-Update the `aws-lambda-tools-defaults.json` file as needed for your Lambda configuration. Example:
-
+The AWS Lambda configuration is in `aws-lambda-tools-defaults.json`:
 ```json
 {
-  "function-name": "ArithmeticCalculatorOperationApi",
-  "function-handler": "ArithmeticCalculatorOperationApi::ArithmeticCalculatorOperationApi.Function::FunctionHandler",
+  "profile": "default",
+  "region": "us-east-1",
+  "configuration": "Release",
   "framework": "net8.0",
-  "memory-size": 256,
-  "timeout": 30,
-  "region": "us-east-1"
+  "function-runtime": "dotnet8",
+  "function-memory-size": 256,
+  "function-timeout": 30,
+  "function-handler": "ArithmeticCalculatorOperationApi.Presentation::ArithmeticCalculatorOperationApi.Presentation.Function::FunctionHandler",
+  "function-name": "ArithmeticCalculatorOperationApi",
+  "function-description": "Lambda function for Arithmetic Calculator Operation API",
+  "package-type": "Zip"
 }
 ```
 
----
+## Contributing
 
-## Testing the API
-
-Use tools like **Postman** or **curl** to test the API. Example with `curl`:
-
-```bash
-curl -X GET http://localhost:5000/api/operations
-```
-
----
-
-## Resources
-
-- [AWS Lambda for .NET](https://docs.aws.amazon.com/lambda/latest/dg/lambda-dotnet.html)
-- [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html)
-- [Docker Documentation](https://docs.docker.com/get-started/)
-
----
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more information.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgements
+
+- [AWS Lambda](https://aws.amazon.com/lambda/)
+- [.NET Core](https://dotnet.microsoft.com/)
+- [AWS Serverless Application Model](https://aws.amazon.com/serverless/sam/)
