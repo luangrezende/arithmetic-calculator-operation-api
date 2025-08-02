@@ -1,18 +1,17 @@
 ﻿using ArithmeticCalculatorOperationApi.Application.Interfaces.Services;
 using ArithmeticCalculatorOperationApi.Application.Models.Response;
+using ArithmeticCalculatorOperationApi.Application.Services;
 using Microsoft.Extensions.Logging;
-using System.Net.Http.Headers;
-using System.Text;
 using System.Text.Json;
 
 public class UserService : IUserService
 {
-    private readonly HttpClient _httpClient;
+    private readonly LambdaInvoker _lambdaInvoker;
     private readonly ILogger<UserService> _logger;
 
-    public UserService(HttpClient httpClient, ILogger<UserService> logger)
+    public UserService(LambdaInvoker lambdaInvoker, ILogger<UserService> logger)
     {
-        _httpClient = httpClient;
+        _lambdaInvoker = lambdaInvoker;
         _logger = logger;
     }
 
@@ -20,84 +19,90 @@ public class UserService : IUserService
     {
         _logger.LogInformation("DebitUserBalanceDirectAsync started: accountId={AccountId}, operationCost={OperationCost}", accountId, operationCost);
 
-        var debitUrl = Environment.GetEnvironmentVariable("USER_DEBIT_API_URL")
-            ?? throw new InvalidOperationException("Missing USER_DEBIT_API_URL environment variable.");
+        var lambdaArn = Environment.GetEnvironmentVariable("USER_LAMBDA_BASE_ARN")
+            ?? throw new InvalidOperationException("Missing USER_LAMBDA_BASE_ARN environment variable.");
 
-        var body = new
+        var debitEndpoint = Environment.GetEnvironmentVariable("USER_DEBIT_ENDPOINT")
+            ?? throw new InvalidOperationException("Missing USER_DEBIT_ENDPOINT environment variable.");
+
+        var payload = new
         {
-            accountId = accountId.ToString(),
-            amount = operationCost
+            httpMethod = "PUT",
+            path = debitEndpoint,
+            headers = new
+            {
+                Authorization = $"Bearer {token}",
+                ContentType = "application/json"
+            },
+            body = JsonSerializer.Serialize(new
+            {
+                accountId = accountId.ToString(),
+                amount = operationCost
+            })
         };
 
-        var requestContent = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json");
-        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-        HttpResponseMessage response;
         try
         {
-            response = await _httpClient.PutAsync(debitUrl, requestContent);
+            var response = await _lambdaInvoker.InvokeLambdaAsync<UserApiResponse<object>>(lambdaArn, payload);
+            
+            if (response == null || response.StatusCode < 200 || response.StatusCode >= 300)
+            {
+                var errorMessage = response?.Data?.ToString() ?? "Unknown error from Debit API";
+                throw new InvalidOperationException(errorMessage);
+            }
+
+            return await GetUpdatedBalanceAsync(accountId, token);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Exception during HTTP PUT to debit endpoint.");
+            _logger.LogError(ex, "Exception during Lambda invocation to debit endpoint.");
             throw;
         }
-
-        var responseBody = await response.Content.ReadAsStringAsync();
-        _logger.LogInformation("Response from Debit API: StatusCode={StatusCode}, Body={Body}", response.StatusCode, responseBody);
-
-        if (!response.IsSuccessStatusCode || string.IsNullOrEmpty(responseBody))
-        {
-            try
-            {
-                var error = JsonSerializer.Deserialize<InnerResponse<ErrorApiUserResponse>>(responseBody);
-                throw new InvalidOperationException(error?.Data?.Error ?? "Unknown error from Debit API");
-            }
-            catch
-            {
-                throw new InvalidOperationException("Error parsing error response from Debit API.");
-            }
-        }
-
-        return await GetUpdatedBalanceAsync(accountId, token);
     }
 
     private async Task<decimal> GetUpdatedBalanceAsync(Guid accountId, string token)
     {
         _logger.LogInformation("GetUpdatedBalanceAsync started: accountId={AccountId}", accountId);
 
-        var profileUrl = Environment.GetEnvironmentVariable("USER_PROFILE_API_URL")
-            ?? throw new InvalidOperationException("Missing USER_PROFILE_API_URL environment variable.");
+        var lambdaArn = Environment.GetEnvironmentVariable("USER_LAMBDA_BASE_ARN")
+            ?? throw new InvalidOperationException("Missing USER_LAMBDA_BASE_ARN environment variable.");
 
-        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var profileEndpoint = Environment.GetEnvironmentVariable("USER_PROFILE_ENDPOINT")
+            ?? throw new InvalidOperationException("Missing USER_PROFILE_ENDPOINT environment variable.");
 
-        HttpResponseMessage response;
+        var payload = new
+        {
+            httpMethod = "GET",
+            path = profileEndpoint,
+            headers = new
+            {
+                Authorization = $"Bearer {token}",
+                ContentType = "application/json"
+            }
+        };
+
         try
         {
-            response = await _httpClient.GetAsync(profileUrl);
+            var response = await _lambdaInvoker.InvokeLambdaAsync<UserApiResponse<UserProfileResponse>>(lambdaArn, payload);
+            
+            if (response?.Data == null)
+                throw new InvalidOperationException("Failed to retrieve user profile.");
+
+            var account = response.Data.Accounts?.FirstOrDefault(a => a.Id == accountId);
+
+            if (account == null)
+            {
+                _logger.LogError("Account with ID {AccountId} not found in profile response", accountId);
+                throw new KeyNotFoundException($"Account with ID {accountId} not found.");
+            }
+
+            _logger.LogInformation("Updated balance retrieved: {Balance}", account.Balance);
+            return account.Balance;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Exception during HTTP GET to profile endpoint.");
+            _logger.LogError(ex, "Exception during Lambda invocation to profile endpoint.");
             throw;
         }
-
-        var responseBody = await response.Content.ReadAsStringAsync();
-        _logger.LogInformation("Response from Profile API: StatusCode={StatusCode}, Body={Body}", response.StatusCode, responseBody);
-
-        if (!response.IsSuccessStatusCode || string.IsNullOrEmpty(responseBody))
-            throw new InvalidOperationException("Failed to retrieve user profile.");
-
-        var profile = JsonSerializer.Deserialize<UserApiResponse<UserProfileResponse>>(responseBody);
-        var account = profile?.Data?.Accounts?.FirstOrDefault(a => a.Id == accountId);
-
-        if (account == null)
-        {
-            _logger.LogError("Account with ID {AccountId} not found in profile response", accountId);
-            throw new KeyNotFoundException($"Account with ID {accountId} not found.");
-        }
-
-        _logger.LogInformation("Updated balance retrieved: {Balance}", account.Balance);
-        return account.Balance;
     }
 }
