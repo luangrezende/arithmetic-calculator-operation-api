@@ -1,4 +1,4 @@
-using System.Net;
+using Amazon.Extensions.NETCore.Setup;
 using Amazon.Lambda;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
@@ -14,6 +14,7 @@ using ArithmeticCalculatorOperationApi.Presentation.Handlers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using System.Net;
 
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
 
@@ -45,7 +46,10 @@ public class Function
         // HTTP e AWS Lambda client
         services.AddScoped<HttpClient>();
         services.AddScoped<LambdaInvoker>();
-        services.AddAWSService<IAmazonLambda>();
+        services.AddAWSService<IAmazonLambda>(new AWSOptions
+        {
+            Region = Amazon.RegionEndpoint.USEast1
+        });
 
         // Repositories
         services.AddScoped<IOperationRepository, OperationRepository>();

@@ -46,7 +46,6 @@ public class LambdaInvoker
                 $"Lambda {TargetLambdaArn} execution failed: {response.FunctionError}");
         }
 
-        // --- Ler resposta ---
         using var reader = new StreamReader(response.Payload);
         var responseContent = await reader.ReadToEndAsync();
 
