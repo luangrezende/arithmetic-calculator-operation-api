@@ -14,28 +14,22 @@ public class OperationService : IOperationService
 {
     private readonly IOperationRepository _operationRepository;
     private readonly IOperationTypeRepository _operationTypeRepository;
-    private readonly IRandomStringService _randomStringService;
 
     public OperationService(
         IOperationRepository operationRepository,
-        IOperationTypeRepository operationTypeRepository, 
-        IRandomStringService randomStringService)
+        IOperationTypeRepository operationTypeRepository)
     {
         _operationRepository = operationRepository;
         _operationTypeRepository = operationTypeRepository;
-        _randomStringService = randomStringService;
     }
 
-    public async Task<string> CalculateOperation(string expression)
+    public Task<string> CalculateOperation(string expression)
     {
         if (string.IsNullOrWhiteSpace(expression))
             throw new ArgumentException(ApiErrorMessages.InvalidExpression);
 
         try
         {
-            if (expression.Equals("random_string", StringComparison.OrdinalIgnoreCase))
-                return await _randomStringService.GenerateRandomStringAsync();
-
             var preparedExpression = PrepareExpression(expression);
 
             Expression expressionResult = new(preparedExpression);
@@ -43,7 +37,7 @@ public class OperationService : IOperationService
             var result = expressionResult.Evaluate()?.ToString();
 
             if (result is not null && result.IsNumeric())
-                return result;
+                return Task.FromResult(result);
 
             throw new ArgumentException(ApiErrorMessages.InvalidExpression);
         }
@@ -56,9 +50,6 @@ public class OperationService : IOperationService
     public async Task<decimal> CalculateOperationPriceAsync(string expression)
     {
         var operators = ExtractOperators(expression).ToList();
-
-        if (expression.Equals("random_string", StringComparison.OrdinalIgnoreCase))
-            operators.Add("random_string");
 
         if (operators.Count == 0)
             throw new ArgumentException(ApiErrorMessages.InvalidExpression);
@@ -128,7 +119,7 @@ public class OperationService : IOperationService
         CreatedAt = entity.CreatedAt,
     };
 
-    public async Task<OperationRecordDTO?> SaveOperationRecordAsync(OperationRecordDTO operationRecord)
+    public async Task<OperationRecordDTO> SaveOperationRecordAsync(OperationRecordDTO operationRecord)
     {
         var retryPolicy = CreateRetryPolicy();
 
@@ -139,7 +130,7 @@ public class OperationService : IOperationService
             if (await _operationRepository.SaveRecordAsync(operationRecordEntity))
                 return ToDTO(operationRecordEntity);
 
-            return null;
+            throw new InvalidOperationException("Failed to save operation record");
         });
     }
 

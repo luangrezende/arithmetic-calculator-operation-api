@@ -98,15 +98,13 @@ namespace ArithmeticCalculatorOperationApi.Presentation.Handlers
         {
             return records.Select(record =>
             {
-                var isRandomString = record.Expression == OperationConfiguration.OperationExpressionRandomString;
-
                 return new OperationRecordResponse
                 {
                     Id = record.Id,
                     Cost = record.Cost,
                     UserBalance = record.UserBalance,
-                    Type = isRandomString ? OperationConfiguration.RandomStringType : OperationConfiguration.ArithmeticStringType,
-                    Expression = isRandomString ? "-" : record.Expression,
+                    Type = OperationConfiguration.ArithmeticStringType,
+                    Expression = record.Expression,
                     Result = record.Result,
                     CreatedAt = record.CreatedAt
                 };

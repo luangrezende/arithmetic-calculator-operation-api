@@ -47,16 +47,16 @@ This project follows Clean Architecture principles with a clear separation of co
    # Windows (PowerShell)
    $env:MYSQL_CONNECTION_STRING="Server=localhost;Database=calculator;User=root;Password=password;"
    $env:JWT_SECRET_KEY="your-jwt-secret-key"
-   $env:USER_DEBIT_API_URL="https://your-user-api-url/v1/user/account/balance"
-   $env:USER_PROFILE_API_URL="https://your-user-api-url/v1/user/profile"
-   $env:RANDOM_STRING_ENDPOINT="https://your-random-string-service-url"
+   $env:USER_LAMBDA_BASE_ARN="arn:aws:lambda:us-east-1:123456789012:function:UserAPI"
+   $env:USER_DEBIT_ENDPOINT="/v1/user/account/balance"
+   $env:USER_PROFILE_ENDPOINT="/v1/user/profile"
 
    # Linux/macOS
    export MYSQL_CONNECTION_STRING="Server=localhost;Database=calculator;User=root;Password=password;"
    export JWT_SECRET_KEY="your-jwt-secret-key"
-   export USER_DEBIT_API_URL="https://your-user-api-url/v1/user/account/balance"
-   export USER_PROFILE_API_URL="https://your-user-api-url/v1/user/profile"
-   export RANDOM_STRING_ENDPOINT="https://your-random-string-service-url"
+   export USER_LAMBDA_BASE_ARN="arn:aws:lambda:us-east-1:123456789012:function:UserAPI"
+   export USER_DEBIT_ENDPOINT="/v1/user/account/balance"
+   export USER_PROFILE_ENDPOINT="/v1/user/profile"
    ```
 
 3. **Restore dependencies**
@@ -83,9 +83,9 @@ The API will be accessible at `http://localhost:5000`.
    docker run -p 5000:5000 \
      -e MYSQL_CONNECTION_STRING="Server=host.docker.internal;Database=calculator;User=root;Password=password;" \
      -e JWT_SECRET_KEY="your-jwt-secret-key" \
-     -e USER_DEBIT_API_URL="https://your-user-api-url/v1/user/account/balance" \
-     -e USER_PROFILE_API_URL="https://your-user-api-url/v1/user/profile" \
-     -e RANDOM_STRING_ENDPOINT="https://your-random-string-service-url" \
+     -e USER_LAMBDA_BASE_ARN="arn:aws:lambda:us-east-1:123456789012:function:UserAPI" \
+     -e USER_DEBIT_ENDPOINT="/v1/user/account/balance" \
+     -e USER_PROFILE_ENDPOINT="/v1/user/profile" \
      arithmetic-calculator-operation-api
    ```
 

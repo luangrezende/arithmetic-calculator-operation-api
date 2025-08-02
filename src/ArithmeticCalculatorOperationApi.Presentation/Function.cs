@@ -41,7 +41,6 @@ public class Function
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IOperationTypeService, OperationTypeService>();
         services.AddScoped<IOperationService, OperationService>();
-        services.AddScoped<IRandomStringService, RandomStringService>();
 
         // HTTP e AWS Lambda client
         services.AddScoped<HttpClient>();
