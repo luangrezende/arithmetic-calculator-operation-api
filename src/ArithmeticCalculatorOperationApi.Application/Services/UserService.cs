@@ -1,6 +1,5 @@
 ﻿using ArithmeticCalculatorOperationApi.Application.Interfaces.Services;
 using ArithmeticCalculatorOperationApi.Application.Models.Response;
-using ArithmeticCalculatorOperationApi.Application.Services;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
 

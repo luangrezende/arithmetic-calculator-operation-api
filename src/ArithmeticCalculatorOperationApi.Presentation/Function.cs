@@ -12,6 +12,7 @@ using ArithmeticCalculatorOperationApi.Infrastructure.Persistence.Services;
 using ArithmeticCalculatorOperationApi.Infrastructure.Security;
 using ArithmeticCalculatorOperationApi.Presentation.Handlers;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
@@ -31,27 +32,37 @@ public class Function
 
     private void ConfigureServices(IServiceCollection services)
     {
+        services.AddLogging(builder =>
+        {
+            builder.AddLambdaLogger();
+        });
+
+        // Services
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IOperationTypeService, OperationTypeService>();
         services.AddScoped<IOperationService, OperationService>();
         services.AddScoped<IRandomStringService, RandomStringService>();
 
+        // HTTP e AWS Lambda client
         services.AddScoped<HttpClient>();
         services.AddScoped<LambdaInvoker>();
+        services.AddAWSService<IAmazonLambda>();
 
+        // Repositories
         services.AddScoped<IOperationRepository, OperationRepository>();
         services.AddScoped<IOperationTypeRepository, OperationTypeRepository>();
 
+        // MySQL connection service
         services.AddScoped<IDbConnectionService>(provider =>
         {
             var connectionString = Environment.GetEnvironmentVariable("MYSQL_CONNECTION_STRING")
-                                ?? throw new InvalidOperationException(ApiErrorMessages.ConnectionStringNotSet);
+                ?? throw new InvalidOperationException(ApiErrorMessages.ConnectionStringNotSet);
             return new MySqlConnectionService(connectionString);
         });
 
-        services.AddScoped(sp => new JwtTokenValidator(Environment.GetEnvironmentVariable("JWT_SECRET_KEY")!));
-
-        services.AddAWSService<IAmazonLambda>();
+        // JWT validator
+        services.AddScoped(sp =>
+            new JwtTokenValidator(Environment.GetEnvironmentVariable("JWT_SECRET_KEY")!));
     }
 
     public async Task<APIGatewayProxyResponse> FunctionHandler(APIGatewayProxyRequest request, ILambdaContext context)
