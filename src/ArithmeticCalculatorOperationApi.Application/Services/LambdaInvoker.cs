@@ -14,45 +14,63 @@ public class LambdaInvoker
         _logger = logger;
     }
 
-    public async Task<T> InvokeLambdaAsync<T>(string functionName, object payload)
+    public async Task<T> InvokeLambdaAsync<T>(string TargetLambdaArn, object payload)
     {
-        var serializedPayload = JsonSerializer.Serialize(payload, new JsonSerializerOptions 
-        { 
-            WriteIndented = true 
-        });
+        var serializedPayload = JsonSerializer.Serialize(payload);
 
-        _logger.LogInformation("Invoking Lambda function '{FunctionName}' with payload:", functionName);
-        _logger.LogInformation("Payload: {Payload}", serializedPayload);
+        _logger.LogInformation("Invoking Lambda function '{FunctionName}' with payload: {Payload}",
+            TargetLambdaArn, serializedPayload);
 
         var request = new InvokeRequest
         {
-            FunctionName = functionName,
+            FunctionName = TargetLambdaArn,
             Payload = serializedPayload,
             InvocationType = InvocationType.RequestResponse
         };
 
-        _logger.LogDebug("Lambda invoke request - FunctionName: {FunctionName}, InvocationType: {InvocationType}", 
-            functionName, request.InvocationType);
-
         var response = await _lambdaClient.InvokeAsync(request);
 
-        _logger.LogInformation("Lambda function '{FunctionName}' responded with status code: {StatusCode}", 
-            functionName, response.StatusCode);
+        _logger.LogInformation("Lambda '{FunctionName}' responded with StatusCode: {StatusCode}",
+            TargetLambdaArn, response.StatusCode);
 
-        if (response.StatusCode != 200)
+        if (!string.IsNullOrEmpty(response.FunctionError))
         {
-            _logger.LogError("Failed to invoke Lambda function '{FunctionName}'. Status code: {StatusCode}, ExecutedVersion: {ExecutedVersion}", 
-                functionName, response.StatusCode, response.ExecutedVersion);
-            throw new InvalidOperationException($"Failed to invoke Lambda function {functionName}. Status code: {response.StatusCode}");
+            using var errReader = new StreamReader(response.Payload);
+            var errContent = await errReader.ReadToEndAsync();
+
+            _logger.LogError("FunctionError from '{FunctionName}': {FunctionError}",
+                TargetLambdaArn, response.FunctionError);
+            _logger.LogError("Error payload: {ErrorPayload}", errContent);
+
+            throw new InvalidOperationException(
+                $"Lambda {TargetLambdaArn} execution failed: {response.FunctionError}");
         }
 
+        // --- Ler resposta ---
         using var reader = new StreamReader(response.Payload);
         var responseContent = await reader.ReadToEndAsync();
 
-        _logger.LogInformation("Lambda function '{FunctionName}' response content:", functionName);
-        _logger.LogInformation("Response: {ResponseContent}", responseContent);
+        _logger.LogInformation("Lambda '{FunctionName}' raw response: {ResponseContent}",
+            TargetLambdaArn, responseContent);
 
-        return JsonSerializer.Deserialize<T>(responseContent)
-               ?? throw new InvalidOperationException($"Invalid response from Lambda {functionName}.");
+        try
+        {
+            var result = JsonSerializer.Deserialize<T>(responseContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            if (result == null)
+            {
+                throw new InvalidOperationException($"Invalid response from Lambda {TargetLambdaArn}.");
+            }
+
+            return result;
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogError(ex, "Failed to deserialize response from Lambda '{FunctionName}'", TargetLambdaArn);
+            throw;
+        }
     }
 }
