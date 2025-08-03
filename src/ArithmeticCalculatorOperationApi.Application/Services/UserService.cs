@@ -16,7 +16,9 @@ public class UserService : IUserService
 
     public async Task<decimal> DebitUserBalanceDirectAsync(Guid accountId, decimal operationCost, string token)
     {
-        _logger.LogInformation("DebitUserBalanceDirectAsync started: accountId={AccountId}, operationCost={OperationCost}", accountId, operationCost);
+        _logger.LogInformation(
+            "DebitUserBalanceDirectAsync started: accountId={AccountId}, operationCost={OperationCost}",
+            accountId, operationCost);
 
         var lambdaArn = Environment.GetEnvironmentVariable("USER_LAMBDA_BASE_ARN")
             ?? throw new InvalidOperationException("Missing USER_LAMBDA_BASE_ARN environment variable.");
@@ -42,11 +44,12 @@ public class UserService : IUserService
 
         try
         {
-            var response = await _lambdaInvoker.InvokeLambdaAsync<UserApiResponse<object>>(lambdaArn, payload);
-            
+            var response = await _lambdaInvoker
+                .InvokeLambdaAsync<ApiGatewayInvokeResponse>(lambdaArn, payload);
+
             if (response == null || response.StatusCode < 200 || response.StatusCode >= 300)
             {
-                var errorMessage = response?.Data?.ToString() ?? "Unknown error from Debit API";
+                var errorMessage = response?.Body ?? "Unknown error from Debit API";
                 throw new InvalidOperationException(errorMessage);
             }
 
@@ -82,12 +85,21 @@ public class UserService : IUserService
 
         try
         {
-            var response = await _lambdaInvoker.InvokeLambdaAsync<UserApiResponse<UserProfileResponse>>(lambdaArn, payload);
-            
-            if (response?.Data == null)
+            var response = await _lambdaInvoker
+                .InvokeLambdaAsync<ApiGatewayInvokeResponse>(lambdaArn, payload);
+
+            if (response?.Body == null)
                 throw new InvalidOperationException("Failed to retrieve user profile.");
 
-            var account = response.Data.Accounts?.FirstOrDefault(a => a.Id == accountId);
+            var userProfile = JsonSerializer.Deserialize<UserProfileResponse>(
+                response.Body,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+            );
+
+            if (userProfile?.Accounts == null)
+                throw new InvalidOperationException("Profile response did not contain accounts.");
+
+            var account = userProfile.Accounts.FirstOrDefault(a => a.Id == accountId);
 
             if (account == null)
             {
