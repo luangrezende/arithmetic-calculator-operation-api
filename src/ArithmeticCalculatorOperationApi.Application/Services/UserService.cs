@@ -44,12 +44,12 @@ public class UserService : IUserService
 
         try
         {
-            var response = await _lambdaInvoker
+            var gatewayResponse = await _lambdaInvoker
                 .InvokeLambdaAsync<ApiGatewayInvokeResponse>(lambdaArn, payload);
 
-            if (response == null || response.StatusCode < 200 || response.StatusCode >= 300)
+            if (gatewayResponse == null || gatewayResponse.StatusCode < 200 || gatewayResponse.StatusCode >= 300)
             {
-                var errorMessage = response?.Body ?? "Unknown error from Debit API";
+                var errorMessage = gatewayResponse?.Body ?? "Unknown error from Debit API";
                 throw new InvalidOperationException(errorMessage);
             }
 
@@ -85,22 +85,21 @@ public class UserService : IUserService
 
         try
         {
-            var response = await _lambdaInvoker
+            var gatewayResponse = await _lambdaInvoker
                 .InvokeLambdaAsync<ApiGatewayInvokeResponse>(lambdaArn, payload);
 
-            if (response?.Body == null)
+            if (string.IsNullOrEmpty(gatewayResponse?.Body))
                 throw new InvalidOperationException("Failed to retrieve user profile.");
 
-            var userProfile = JsonSerializer.Deserialize<UserProfileResponse>(
-                response.Body,
+            var apiResponse = JsonSerializer.Deserialize<UserApiResponse<UserProfileResponse>>(
+                gatewayResponse.Body,
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
             );
 
-            if (userProfile?.Accounts == null)
+            if (apiResponse?.Data?.Accounts == null)
                 throw new InvalidOperationException("Profile response did not contain accounts.");
 
-            var account = userProfile.Accounts.FirstOrDefault(a => a.Id == accountId);
-
+            var account = apiResponse.Data.Accounts.FirstOrDefault(a => a.Id == accountId);
             if (account == null)
             {
                 _logger.LogError("Account with ID {AccountId} not found in profile response", accountId);
