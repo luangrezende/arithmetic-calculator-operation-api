@@ -25,11 +25,11 @@ namespace ArithmeticCalculatorOperationApi.Presentation.Handlers
         {
             return request.HttpMethod switch
             {
-                "GET" when request.Path == "/v1/operations/types" => await GetOperationsType(request),
-                "GET" when request.Path == "/v1/operations/records" => await GetPagedOperations(request),
-                "GET" when request.Path == "/v1/operations/dashboard" => await GetDashboardData(request),
-                "POST" when request.Path == "/v1/operations/records" => await AddOperation(request),
-                "DELETE" when request.Path == "/v1/operations/records" => await SoftDeleteOperationRecords(request),
+                "GET" when request.Path == "/operation/types" => await GetOperationsType(request),
+                "GET" when request.Path == "/operation/records" => await GetPagedOperations(request),
+                "GET" when request.Path == "/operation/dashboard" => await GetDashboardData(request),
+                "POST" when request.Path == "/operation/records" => await AddOperation(request),
+                "DELETE" when request.Path == "/operation/records" => await SoftDeleteOperationRecords(request),
                 _ => ResponseHelper.BuildResponse(HttpStatusCode.NotFound, new { error = ApiErrorMessages.EndpointNotFound })
             };
         }
