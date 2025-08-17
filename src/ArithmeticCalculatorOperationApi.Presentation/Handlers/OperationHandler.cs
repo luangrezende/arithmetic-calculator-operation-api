@@ -25,6 +25,8 @@ namespace ArithmeticCalculatorOperationApi.Presentation.Handlers
         {
             return request.HttpMethod switch
             {
+                "OPTIONS" => HandleOptionsRequest(),
+                "GET" when request.Path == "/operation/health" => HandleHealthCheck(),
                 "GET" when request.Path == "/operation/types" => await GetOperationsType(request),
                 "GET" when request.Path == "/operation/records" => await GetPagedOperations(request),
                 "GET" when request.Path == "/operation/dashboard" => await GetDashboardData(request),
@@ -211,6 +213,16 @@ namespace ArithmeticCalculatorOperationApi.Presentation.Handlers
                 throw new HttpResponseExceptionHelper(HttpStatusCode.Unauthorized, ApiErrorMessages.InvalidToken);
 
             return (userId, token);
+        }
+
+        private static APIGatewayProxyResponse HandleOptionsRequest()
+        {
+            return ResponseHelper.BuildResponse(HttpStatusCode.OK, new { message = "CORS preflight" });
+        }
+
+        private static APIGatewayProxyResponse HandleHealthCheck()
+        {
+            return ResponseHelper.BuildResponse(HttpStatusCode.OK, new { message = "Operation API is healthy", timestamp = DateTime.UtcNow });
         }
     }
 }
