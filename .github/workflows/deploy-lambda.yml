@@ -78,8 +78,8 @@ jobs:
           echo "Updating Lambda function configuration"
           aws lambda update-function-configuration \
             --function-name ArithmeticCalculatorOperationApi \
-            --timeout 60 \
-            --memory-size 1024 \
+            --timeout 30 \
+            --memory-size 256 \
             --vpc-config SubnetIds="${{ secrets.LAMBDA_SUBNET_IDS }}",SecurityGroupIds="${{ secrets.LAMBDA_SECURITY_GROUP_ID }}" \
             --environment Variables="{MYSQL_CONNECTION_STRING=${{ secrets.MYSQL_CONNECTION_STRING }},JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }},USER_LAMBDA_BASE_ARN=${{ secrets.USER_LAMBDA_BASE_ARN }},USER_DEBIT_ENDPOINT=${{ secrets.USER_DEBIT_ENDPOINT }},USER_PROFILE_ENDPOINT=${{ secrets.USER_PROFILE_ENDPOINT }}}"
         else
@@ -90,8 +90,8 @@ jobs:
             --role ${{ secrets.LAMBDA_EXECUTION_ROLE_ARN }} \
             --handler ArithmeticCalculatorOperationApi.Presentation::ArithmeticCalculatorOperationApi.Presentation.Function::FunctionHandler \
             --zip-file fileb://src/ArithmeticCalculatorOperationApi.Presentation/deployment-package.zip \
-            --timeout 60 \
-            --memory-size 1024 \
+            --timeout 30 \
+            --memory-size 256 \
             --vpc-config SubnetIds="${{ secrets.LAMBDA_SUBNET_IDS }}",SecurityGroupIds="${{ secrets.LAMBDA_SECURITY_GROUP_ID }}" \
             --environment Variables="{MYSQL_CONNECTION_STRING=${{ secrets.MYSQL_CONNECTION_STRING }},JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }},USER_LAMBDA_BASE_ARN=${{ secrets.USER_LAMBDA_BASE_ARN }},USER_DEBIT_ENDPOINT=${{ secrets.USER_DEBIT_ENDPOINT }},USER_PROFILE_ENDPOINT=${{ secrets.USER_PROFILE_ENDPOINT }}}"
         fi
