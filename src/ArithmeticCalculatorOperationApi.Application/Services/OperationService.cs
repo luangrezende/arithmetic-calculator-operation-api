@@ -30,6 +30,12 @@ public class OperationService : IOperationService
 
         try
         {
+            if (expression.Trim().Equals("random_string", StringComparison.OrdinalIgnoreCase))
+            {
+                var randomString = GenerateRandomString(10);
+                return Task.FromResult(randomString);
+            }
+
             var preparedExpression = PrepareExpression(expression);
 
             Expression expressionResult = new(preparedExpression);
@@ -49,6 +55,16 @@ public class OperationService : IOperationService
 
     public async Task<decimal> CalculateOperationPriceAsync(string expression)
     {
+        if (expression.Trim().Equals("random_string", StringComparison.OrdinalIgnoreCase))
+        {
+            var randomStringOperationTypes = await _operationTypeRepository.GetByOperatorCodesAsync(new[] { "random_string" });
+            if (randomStringOperationTypes != null && randomStringOperationTypes.Count > 0)
+            {
+                return randomStringOperationTypes.First().Cost;
+            }
+            return 1.0m;
+        }
+
         var operators = ExtractOperators(expression).ToList();
 
         if (operators.Count == 0)
@@ -97,6 +113,20 @@ public class OperationService : IOperationService
         }
 
         return [.. operators];
+    }
+
+    private static string GenerateRandomString(int length)
+    {
+        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+        var random = new Random();
+        var result = new char[length];
+        
+        for (int i = 0; i < length; i++)
+        {
+            result[i] = chars[random.Next(chars.Length)];
+        }
+        
+        return new string(result);
     }
 
     public async Task<(int totalRecords, List<OperationRecordDTO> records)> GetPagedOperationsAsync(Guid userId, int page, int pageSize, string query)
