@@ -23,15 +23,26 @@ namespace ArithmeticCalculatorOperationApi.Presentation.Handlers
 
         public async Task<APIGatewayProxyResponse> HandleRequest(APIGatewayProxyRequest request)
         {
+            var path = request.Path ?? "/";
+            if (path.StartsWith("/prod/", StringComparison.OrdinalIgnoreCase))
+                path = path.Substring(5);
+            else if (string.Equals(path, "/prod", StringComparison.OrdinalIgnoreCase))
+                path = "/";
+
+            if (path.StartsWith("/api/", StringComparison.OrdinalIgnoreCase))
+                path = path.Substring(4);
+            else if (string.Equals(path, "/api", StringComparison.OrdinalIgnoreCase))
+                path = "/";
+
             return request.HttpMethod switch
             {
                 "OPTIONS" => HandleOptionsRequest(),
-                "GET" when request.Path == "/operation/health" => HandleHealthCheck(),
-                "GET" when request.Path == "/operation/types" => await GetOperationsType(request),
-                "GET" when request.Path == "/operation/records" => await GetPagedOperations(request),
-                "GET" when request.Path == "/operation/dashboard" => await GetDashboardData(request),
-                "POST" when request.Path == "/operation/records" => await AddOperation(request),
-                "DELETE" when request.Path == "/operation/records" => await SoftDeleteOperationRecords(request),
+                "GET" when path == "/operation/health" => HandleHealthCheck(),
+                "GET" when path == "/operation/types" => await GetOperationsType(request),
+                "GET" when path == "/operation/records" => await GetPagedOperations(request),
+                "GET" when path == "/operation/dashboard" => await GetDashboardData(request),
+                "POST" when path == "/operation/records" => await AddOperation(request),
+                "DELETE" when path == "/operation/records" => await SoftDeleteOperationRecords(request),
                 _ => ResponseHelper.BuildResponse(HttpStatusCode.NotFound, new { error = ApiErrorMessages.EndpointNotFound })
             };
         }
