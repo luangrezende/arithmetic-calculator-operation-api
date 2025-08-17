@@ -12,7 +12,7 @@ using System.Net;
 
 namespace ArithmeticCalculatorOperationApi.Presentation.Handlers
 {
-    public class OperationHandler
+    public class OperationHandler : BaseHandler
     {
         private readonly IServiceProvider _serviceProvider;
 
@@ -23,18 +23,7 @@ namespace ArithmeticCalculatorOperationApi.Presentation.Handlers
 
         public async Task<APIGatewayProxyResponse> HandleRequest(APIGatewayProxyRequest request)
         {
-            var path = request.Path ?? "/";
-            
-            var segments = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
-            if (segments.Length > 0 && !segments[0].Equals("api", StringComparison.OrdinalIgnoreCase))
-            {
-                path = "/" + string.Join("/", segments.Skip(1));
-            }
-
-            if (path.StartsWith("/api/", StringComparison.OrdinalIgnoreCase))
-                path = path.Substring(4);
-            else if (string.Equals(path, "/api", StringComparison.OrdinalIgnoreCase))
-                path = "/";
+            var path = NormalizePath(request.Path);
 
             return request.HttpMethod switch
             {
@@ -45,7 +34,7 @@ namespace ArithmeticCalculatorOperationApi.Presentation.Handlers
                 "GET" when path == "/operation/dashboard" => await GetDashboardData(request),
                 "POST" when path == "/operation/records" => await AddOperation(request),
                 "DELETE" when path == "/operation/records" => await SoftDeleteOperationRecords(request),
-                _ => ResponseHelper.BuildResponse(HttpStatusCode.NotFound, new { error = ApiErrorMessages.EndpointNotFound })
+                _ => HandleNotFound()
             };
         }
 
@@ -226,11 +215,6 @@ namespace ArithmeticCalculatorOperationApi.Presentation.Handlers
                 throw new HttpResponseExceptionHelper(HttpStatusCode.Unauthorized, ApiErrorMessages.InvalidToken);
 
             return (userId, token);
-        }
-
-        private static APIGatewayProxyResponse HandleOptionsRequest()
-        {
-            return ResponseHelper.BuildResponse(HttpStatusCode.OK, new { message = "CORS preflight" });
         }
 
         private static APIGatewayProxyResponse HandleHealthCheck()
