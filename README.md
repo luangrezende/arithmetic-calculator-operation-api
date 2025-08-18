@@ -1,8 +1,10 @@
-# Arithmetic Calculator Operation API v1.0.0
+# Arithmetic Calculator Operation API
 
-![.NET 8](https://img.shields.io/badge/.NET-8.0-512BD4)
-![AWS Lambda](https://img.shields.io/badge/AWS-Lambda-FF9900)
-![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+![Build Status](https://img.shields.io/github/actions/workflow/status/luangrezende/arithmetic-calculator-operation-api/ci-cd.yml?branch=main&style=flat-square&logo=github)
+![Version](https://img.shields.io/github/v/release/luangrezende/arithmetic-calculator-operation-api?style=flat-square&logo=github)
+![.NET 8](https://img.shields.io/badge/.NET-8.0-512BD4?style=flat-square&logo=dotnet)
+![AWS Lambda](https://img.shields.io/badge/AWS-Lambda-FF9900?style=flat-square&logo=awslambda&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)
 
 A microservice responsible for arithmetic operations within the Arithmetic Calculator ecosystem. Built on AWS Lambda with .NET 8.
 
