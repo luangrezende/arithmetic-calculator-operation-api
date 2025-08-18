@@ -153,24 +153,13 @@ jobs:
         tag_name: ${{ steps.version.outputs.version }}
         name: ${{ steps.version.outputs.version }} - Operation API
         body: |
-          ## Release ${{ steps.version.outputs.version }}
+          ## Operation API ${{ steps.version.outputs.version }}
           
-          **Release Type:** ${{ steps.version.outputs.release_type }} release
+          **Type:** ${{ steps.version.outputs.release_type }} release  
+          **SHA:** `${{ github.sha }}`
           
-          ### Deployed Components
-          - Operation API Lambda Function
-          - Build SHA: `${{ github.sha }}`
-          - Deployment Date: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
-          
-          ### Technical Details
-          - .NET 8.0 Runtime
-          - AWS Lambda Deployment
-          - Clean Architecture Implementation
-          
-          ### Commit Message
-          ```
+          ### Changes
           ${{ github.event.head_commit.message }}
-          ```
         draft: false
         prerelease: false
       env:
