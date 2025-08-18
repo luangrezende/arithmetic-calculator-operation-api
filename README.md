@@ -8,7 +8,8 @@ A microservice responsible for arithmetic operations within the Arithmetic Calcu
 
 ## Features
 
-- **Arithmetic Operations**: Perform addition, subtraction, multiplication, and division
+- **Arithmetic Operations**: Perform addition, subtraction, multiplication, division, and square root
+- **Random String Generation**: Generate random alphanumeric strings
 - **Serverless Architecture**: Deployed as AWS Lambda functions
 
 ## Architecture
@@ -89,18 +90,6 @@ The API will be accessible at `http://localhost:5000`.
      arithmetic-calculator-operation-api
    ```
 
-### Docker Development
-
-1. **Build the Docker image**
-   ```bash
-   docker build -t arithmetic-calculator-operation-api .
-   ```
-
-2. **Run the container**
-   ```bash
-   docker run -p 5000:5000 arithmetic-calculator-operation-api
-   ```
-
 ## Deployment to AWS Lambda
 
 ### Manual Deployment
@@ -128,13 +117,16 @@ This project includes a CI/CD pipeline using GitHub Actions. To set up:
 
 ## API Endpoints
 
+### Health Check
+
+- **GET /operation/health** - Health check endpoint for monitoring
 
 ### Operations
 
 - **GET /v1/operations/types** - List all operation types
-- **GET /v1/operations/records** - List paged operation records
+- **GET /v1/operations/records** - List paged operation records  
 - **GET /v1/operations/dashboard** - Get dashboard data for the user
-- **POST /v1/operations/records** - Add a new operation record
+- **POST /v1/operations/records** - Create a new operation record (arithmetic or random string)
 - **DELETE /v1/operations/records** - Soft delete operation records
 
 ## Testing
