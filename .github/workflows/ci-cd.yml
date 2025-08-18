@@ -7,6 +7,11 @@ on:
     branches: [ main, master ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+  packages: read
+  actions: read
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
@@ -143,12 +148,10 @@ jobs:
         echo "release_type=$(if [[ "$COMMIT_MSG" == *"BREAKING CHANGE"* ]] || [[ "$COMMIT_MSG" == *"major:"* ]]; then echo "major"; elif [[ "$COMMIT_MSG" == *"feat:"* ]] || [[ "$COMMIT_MSG" == *"feature:"* ]]; then echo "minor"; else echo "patch"; fi)" >> $GITHUB_OUTPUT
         
     - name: Create Release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: softprops/action-gh-release@v1
       with:
         tag_name: ${{ steps.version.outputs.version }}
-        release_name: ${{ steps.version.outputs.version }} - Operation API
+        name: ${{ steps.version.outputs.version }} - Operation API
         body: |
           ## Release ${{ steps.version.outputs.version }}
           
@@ -170,3 +173,5 @@ jobs:
           ```
         draft: false
         prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
